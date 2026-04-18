@@ -1,8 +1,10 @@
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authAdmin";
 import bcrypt from "bcryptjs";
-export const dynamic = "force-dynamic";
+
 
 //////////////////////////////////////////////////////
 // GET ADMIN BY ID
