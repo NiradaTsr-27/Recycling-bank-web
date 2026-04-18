@@ -1,0 +1,54 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 28px;
+  background-color: var(--primary-light);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- LOGO ---------- */
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+/* ---------- MENU ---------- */
+.menu {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.link {
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--primary-dark);
+}
+
+.logout {
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--error);
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.logout:hover {
+  opacity: 0.8;
+}

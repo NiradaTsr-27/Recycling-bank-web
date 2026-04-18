@@ -1,0 +1,124 @@
+.container {
+  padding: 40px;
+  background: #f6f7f9;
+  min-height: 100vh;
+}
+
+.title {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background: #fafafa;
+  font-weight: 600;
+  padding: 14px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.table td {
+  padding: 14px;
+  vertical-align: top;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+.table thead th {
+  position: sticky;
+  top: 0; 
+  background-color: #ffffff;
+  z-index: 10; 
+}
+.list {
+  padding-left: 18px;
+  text-align: left;
+}
+
+.list li {
+  margin-bottom: 6px;
+}
+
+.pending {
+  background: #ffefc2;
+  color: #9c6b00;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.detailBtn {
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.detailBtn:hover {
+  background: #554eea;
+  transform: translateY(-1px);
+}
+
+.pending {
+  background: #ffefc2;
+  color: #9c6b00;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.confirmed {
+  background: #d4edda;
+  color: #1e7e34;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.rejected {
+  background: #f8d7da;
+  color: #a71d2a;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Report Table Override */
+.table thead, .table thead th {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.table td {
+  padding: 14px 20px !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+}
+.table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}

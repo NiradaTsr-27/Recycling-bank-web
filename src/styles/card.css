@@ -1,0 +1,52 @@
+.card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
+  margin: 24px auto;
+  width: 100%;
+  max-width: 1000px;
+  box-sizing: border-box;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient accent line at the top of the card */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  opacity: 0.8;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.card h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* For smaller cards (e.g. Dashboard stats) */
+.card-sm {
+  padding: 20px;
+  border-radius: var(--radius-sm);
+}
+
+.card-sm h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}

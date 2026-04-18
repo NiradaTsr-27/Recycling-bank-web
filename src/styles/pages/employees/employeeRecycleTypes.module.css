@@ -1,0 +1,403 @@
+.container {
+  padding: 32px;
+}
+
+/* ================= HEADER ================= */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.addBtn {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.addBtn:hover {
+  background: #16a34a;
+}
+
+/* ================= CARD ================= */
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+}
+
+/* ================= TABLE ================= */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table thead th {
+  background: #ecfdf5;
+  color: #166534;
+  text-align: left;
+  padding: 14px;
+  font-weight: 600;
+}
+
+.table tbody td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* =====================
+   ACTION ICONS
+===================== */
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--info);
+  transition: 0.2s ease;
+}
+
+.iconBtn:hover {
+  background: rgba(30, 136, 229, 0.12);
+}
+
+.edit {
+  background-color: var(--info);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+.edit:hover {
+    background: #3b73ff;
+    transform: scale(1.05);
+}
+
+.delete {
+
+  background-color: var(--error);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+.delete:hover {
+  background: #bb2222;
+  transform: scale(1.1);
+}
+
+/* ================= MODAL ================= */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  width: 100%;
+  max-width: 720px;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal h2 {
+  font-size: 22px;
+  margin-bottom: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup label {
+  font-weight: 500;
+}
+
+.formGroup input {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+/* Actions */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.cancelBtn {
+  background: #bfc5c9;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.saveBtn {
+  background: #2ecc71;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+@media (max-width: 640px) {
+  .modal {
+    padding: 24px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .cancelBtn,
+  .saveBtn {
+    width: 100%;
+  }
+}
+
+
+
+
+/* ================= RESPONSIVE ================= */
+
+/* ---------- Tablet (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  .container {
+    padding: 24px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .addBtn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 12px;
+  }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .addBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  /* ซ่อนหัวตาราง */
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .table td {
+    border: none;
+    padding: 6px 0;
+    font-size: 14px;
+  }
+
+  /* label ซ้าย */
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .actions {
+    justify-content: flex-start;
+    margin-top: 10px;
+    
+  }
+  .actions button {
+    margin-bottom: 10px;
+  }
+}
+
+/* ===== Delete Modal ===== */
+
+.deleteModal {
+  background: #ffffff;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.25s ease;
+}
+
+.deleteModal h3 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.deleteModal p {
+  font-size: 14px;
+  margin-bottom: 24px;
+  color: #444;
+}
+
+.deleteActions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.deleteConfirm {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.deleteConfirm:hover {
+  background: #b91c1c;
+}
+
+.deleteConfirm:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.submit {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--success);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.submit:hover {
+  background: #1eaf31;
+}
+
+.submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.textadd{
+  font-size: large;
+}
+/* Report Table Override */
+.table thead, .table thead th {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.table td {
+  padding: 14px 20px !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+}
+.table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}

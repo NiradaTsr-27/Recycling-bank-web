@@ -1,0 +1,466 @@
+.container {
+  padding: 32px;
+}
+
+.title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  
+}
+
+.title h1 {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--primary);
+  color: #fff;
+  z-index: 10;
+  padding: 14px 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.table th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.table th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  color: var(--text-main);
+  transition: background-color 0.2s;
+}
+
+.table tbody tr:hover td {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+
+/* =====================
+   ACTION ICONS
+===================== */
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--info);
+  transition: 0.2s ease;
+}
+
+.iconBtn:hover {
+  background: rgba(30, 136, 229, 0.12);
+}
+
+.edit {
+  background-color: var(--info);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+.edit:hover {
+    background: #3b73ff;
+    transform: scale(1.05);
+}
+
+.delete {
+
+  background-color: var(--error);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+.delete:hover {
+  background: #bb2222;
+  transform: scale(1.1);
+}
+
+.addIconBtn {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+  box-shadow: var(--shadow);
+  transition: 0.2s ease;
+}
+
+.addIconBtn:hover {
+  background: #388e3c;
+  transform: scale(1.05);
+}
+
+
+/* =====================
+   RESPONSIVE
+===================== */
+
+/* Tablet ลงมา */
+@media (max-width: 1024px) {
+  .container {
+    padding: 24px;
+  }
+
+  .title h1 {
+    font-size: 22px;
+  }
+
+  .table {
+    font-size: 13px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  /* หัวข้อ + ปุ่ม เพิ่ม */
+  .title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .title h1 {
+    font-size: 20px;
+  }
+
+  /* ทำให้ table เลื่อนได้ */
+  .card {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 720px; /* กันตารางยุบ */
+  }
+
+  
+
+  /* ปุ่ม action */
+  .actions {
+    gap: 6px;
+  }
+
+  .edit,
+  .delete {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+
+  .addIconBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
+/* Mobile เล็กมาก */
+@media (max-width: 480px) {
+  .title h1 {
+    font-size: 18px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal {
+    max-height: 85vh;
+    padding: 20px;
+  }
+}
+
+/* ===== Overlay ===== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* ===== Modal Box ===== */
+.modal {
+  background: #ffffff;
+  width: 90%;
+  max-width: 900px;
+
+  max-height: 90vh;      /* ✅ กันล้นจอ */
+  overflow-y: auto;      /* ✅ ให้ scroll ใน modal */
+
+  border-radius: 14px;
+  padding: 32px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.25s ease;
+}
+
+.modal h2 {
+  margin-bottom: 24px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ===== Form Layout ===== */
+.modalForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 20px;
+}
+
+/* ===== Field ===== */
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.field input,
+.field select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: #fafafa;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* ===== Buttons ===== */
+.modalActions {
+  margin-top: 28px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancel {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.cancel:hover {
+  background: #d1d5db;
+}
+
+.submit {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--success);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.submit:hover {
+  background: #1eaf31;
+}
+
+.submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(15px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal {
+    padding: 22px;
+  }
+}
+
+/* ===== Delete Modal ===== */
+
+.deleteModal {
+  background: #ffffff;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.25s ease;
+}
+
+.deleteModal h3 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.deleteModal p {
+  font-size: 14px;
+  margin-bottom: 24px;
+  color: #444;
+}
+
+.deleteActions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.deleteConfirm {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.deleteConfirm:hover {
+  background: #b91c1c;
+}
+
+.deleteConfirm:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Report Table Override */
+.table thead, .table thead th {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.table td {
+  padding: 14px 20px !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+}
+.table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}

@@ -1,0 +1,429 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import styles from "@/styles/pages/admin/adminMemberAdd.module.css";
+import EmployeeNavbar from "@/components/navbar/EmployeeNavbar";
+
+export default function AddMemberPage() {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [errors, setErrors] = useState<any>({});
+
+  const [form, setForm] = useState({
+    nationalId: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    username: "",
+    password: "",
+
+    houseNo: "",
+    village: "",
+    road: "",
+    alley: "",
+
+    subDistrict: "",
+    district: "",
+    province: "",
+    postalCode: "",
+  });
+
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [subDistricts, setSubDistricts] = useState<any[]>([]);
+
+  const [filteredDistricts, setFilteredDistricts] = useState<any[]>([]);
+  const [filteredSubDistricts, setFilteredSubDistricts] = useState<any[]>([]);
+
+  // search
+  const [provinceSearch, setProvinceSearch] = useState("");
+  const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/JSON/provinces.json").then((res) => res.json()),
+      fetch("/JSON/districts.json").then((res) => res.json()),
+      fetch("/JSON/subdistricts.json").then((res) => res.json()),
+    ]).then(([p, d, s]) => {
+      setProvinces(p);
+      setDistricts(d);
+      setSubDistricts(s);
+    });
+  }, []);
+
+  const handleProvinceChange = (value: string) => {
+    const province = provinces.find((p) => p.provinceNameTh === value);
+
+    const filtered = districts.filter(
+      (d) => d.provinceCode === province?.provinceCode,
+    );
+
+    setFilteredDistricts(filtered);
+    setFilteredSubDistricts([]);
+
+    setForm({
+      ...form,
+      province: value,
+      district: "",
+      subDistrict: "",
+      postalCode: "",
+    });
+  };
+
+  const handleDistrictChange = (value: string) => {
+    const district = districts.find((d) => d.districtNameTh === value);
+
+    const filtered = subDistricts.filter(
+      (s) => s.districtCode === district?.districtCode,
+    );
+
+    setFilteredSubDistricts(filtered);
+
+    setForm({
+      ...form,
+      district: value,
+      subDistrict: "",
+      postalCode: "",
+    });
+  };
+
+  const handleSubDistrictChange = (value: string) => {
+    const tambon = subDistricts.find((s) => s.subdistrictNameTh === value);
+
+    setForm({
+      ...form,
+      subDistrict: value,
+      postalCode: tambon?.postalCode?.toString() || "",
+    });
+  };
+
+  //////////////////////////////////////////////////////
+  // HANDLE SUBMIT
+  //////////////////////////////////////////////////////
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const res = await fetch("/api/employee/members", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nationalId: form.nationalId,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+        houseNo: form.houseNo,
+        village: form.village,
+        road: form.road,
+        alley: form.alley,
+        subDistrict: form.subDistrict,
+        district: form.district,
+        province: form.province,
+        postalCode: form.postalCode,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      router.push("/employee/membersEmp");
+    } else {
+      if (data.field) {
+        setErrors((prev: any) => ({
+          ...prev,
+          [data.field]: data.message,
+        }));
+        return;
+      }
+
+      alert(data.error || "เกิดข้อผิดพลาด");
+    }
+  };
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  //////////////////////////////////////////////////////
+  // RENDER
+  //////////////////////////////////////////////////////
+  return (
+    <>
+      <EmployeeNavbar />
+
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <h1 className={styles.title}>เพิ่มสมาชิกใหม่</h1>
+
+          {error && <p className={styles.error}>{error}</p>}
+
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.grid}>
+              <div className={styles.formGroup}>
+                <label>
+                  เลขบัตรประชาชน <span style={{ color: "red" }}>*</span>
+                </label>
+                <input
+                  name="nationalId"
+                  value={form.nationalId}
+                  onChange={(e) => {
+                    setForm({
+                      ...form,
+                      nationalId: e.target.value.replace(/\D/g, ""),
+                    });
+                    setErrors({ ...errors, nationalId: "" });
+                  }}
+                  required
+                  pattern="[0-9]{13}"
+                  maxLength={13}
+                  inputMode="numeric"
+                />
+
+                {errors.nationalId && (
+                  <small style={{ color: "red" }}>{errors.nationalId}</small>
+                )}
+              </div>{" "}
+              <br />
+              <div className={styles.formGroup}>
+                <label>
+                  ชื่อ <span style={{ color: "red" }}>*</span>
+                </label>
+                <input
+                  name="firstName"
+                  type="text"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>
+                  นามสกุล <span style={{ color: "red" }}>*</span>
+                </label>
+                <input
+                  name="lastName"
+                  type="text"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>
+                  เบอร์โทรศัพท์ <span style={{ color: "red" }}>*</span>
+                </label>
+                <input
+                  name="phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => {
+                    setForm({
+                      ...form,
+                      phone: e.target.value.replace(/\D/g, ""),
+                    });
+                    setErrors({ ...errors, phone: "" });
+                  }}
+                  required
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  inputMode="numeric"
+                />
+
+                {errors.phone && (
+                  <small style={{ color: "red" }}>{errors.phone}</small>
+                )}
+              </div>
+              <div className={styles.formGroup}>
+                <label>
+                  Email <span style={{ color: "red" }}>*</span>
+                </label>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    name="email"
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        email: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>
+                  Username <span style={{ color: "red" }}>*</span>
+                </label>
+                <input
+                  name="username"
+                  type="text"
+                  value={form.username}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>
+                  Password <span style={{ color: "red" }}>*</span>
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={styles.grid}>
+              <div className={styles.formGroup}>
+                <label>บ้านเลขที่</label>
+                <input
+                  name="houseNo"
+                  value={form.houseNo}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>หมู่</label>
+                <input
+                  name="village"
+                  value={form.village}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>ซอย</label>
+                <input
+                  name="alley"
+                  value={form.alley}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>ถนน</label>
+                <input name="road" value={form.road} onChange={handleChange} />
+              </div>
+              <div
+                className={styles.formGroup}
+                style={{ position: "relative" }}
+              >
+                <label>จังหวัด</label>
+
+                <input
+                  value={provinceSearch}
+                  placeholder="พิมพ์ค้นหาจังหวัด"
+                  onChange={(e) => {
+                    setProvinceSearch(e.target.value);
+                    setShowProvinceDropdown(true);
+                  }}
+                  onFocus={() => setShowProvinceDropdown(true)}
+                />
+
+                {showProvinceDropdown && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      width: "100%",
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                      background: "#fff",
+                      border: "1px solid #ccc",
+                      zIndex: 9999,
+                    }}
+                  >
+                    {provinces
+                      .filter((p) => p.provinceNameTh.includes(provinceSearch))
+                      .map((p) => (
+                        <div
+                          key={p.provinceCode}
+                          style={{ padding: "8px", cursor: "pointer" }}
+                          onClick={() => {
+                            handleProvinceChange(p.provinceNameTh);
+                            setProvinceSearch(p.provinceNameTh);
+                            setShowProvinceDropdown(false);
+                          }}
+                        >
+                          {p.provinceNameTh}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+              <div className={styles.formGroup}>
+                <label>อำเภอ</label>
+                <select
+                  value={form.district}
+                  onChange={(e) => handleDistrictChange(e.target.value)}
+                  disabled={!form.province}
+                >
+                  <option value="">เลือกอำเภอ</option>
+                  {filteredDistricts.map((d) => (
+                    <option key={d.districtCode} value={d.districtNameTh}>
+                      {d.districtNameTh}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label>ตำบล</label>
+                <select
+                  value={form.subDistrict}
+                  onChange={(e) => handleSubDistrictChange(e.target.value)}
+                  disabled={!form.district}
+                >
+                  <option value="">เลือกตำบล</option>
+                  {filteredSubDistricts.map((s) => (
+                    <option key={s.subdistrictCode} value={s.subdistrictNameTh}>
+                      {s.subdistrictNameTh}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>รหัสไปรษณีย์</label>
+                <input value={form.postalCode} readOnly />
+              </div>
+            </div>
+
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.cancelBtn}
+                onClick={() => router.push("/employee/membersEmp")}
+              >
+                ยกเลิก
+              </button>
+
+              <button
+                type="submit"
+                className={styles.saveBtn}
+                disabled={loading}
+              >
+                {loading ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,98 @@
+/* ================= Container ================= */
+
+.container {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.card {
+  background: #ffffff;
+  width: 700px;
+  max-width: 95%;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.card h1 {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 30px;
+}
+
+/* ================= Empty State ================= */
+
+.empty {
+  text-align: center;
+  color: #777;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+/* ================= Transaction List ================= */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  align-items: center;
+  background: #ffffff;
+  padding: 15px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  border: 1px solid #e5e5e5;
+}
+
+/* ประเภท */
+.item span:first-child {
+  font-weight: 600;
+}
+
+/* ฝากเงิน = เขียว */
+.item span:first-child:contains("ฝากเงิน") {
+  color: #4CAF50;
+}
+
+/* ถอนเงิน = แดง */
+.item span:first-child:contains("ถอนเงิน") {
+  color: #f44336;
+}
+
+/* จำนวนเงิน */
+.item span:nth-child(2) {
+  font-weight: 600;
+}
+
+/* วันที่ */
+.item span:nth-child(3) {
+  font-size: 13px;
+  color: #777;
+}
+
+/* ================= Back Button ================= */
+
+.backBtn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #e0e0e0;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s ease;
+}
+
+.backBtn:hover {
+  background: #d5d5d5;
+}

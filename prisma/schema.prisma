@@ -1,0 +1,319 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////////////////////////////////////
+// ENUM
+//////////////////////////////////////////////////////
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WalletType {
+  DEPOSIT
+  WITHDRAW
+}
+
+//////////////////////////////////////////////////////
+// ACCOUNT (ใช้ username login)
+//////////////////////////////////////////////////////
+
+model Account {
+  id Int @id @default(autoincrement())
+
+  username String @unique // ใช้ login
+  email    String @unique
+  password String
+
+  admin    Admin?
+  employee Employee?
+  member   Member?
+
+  passwordResetTokens PasswordResetToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([username])
+}
+
+//////////////////////////////////////////////////////
+// ADMIN
+//////////////////////////////////////////////////////
+
+model Admin {
+  id         Int    @id @default(autoincrement())
+  accountId  Int    @unique
+  nationalId String @unique @db.VarChar(13)
+  firstName  String
+  lastName   String
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// ORGANIZATION
+//////////////////////////////////////////////////////
+
+model Organization {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  houseNo     String?
+  village     String?
+  road        String?
+  alley       String?
+  subDistrict String?
+  district    String?
+  province    String?
+  postalCode  String?
+
+  phone  String? @unique @db.VarChar(10)
+  mapUrl String?
+
+  employees Employee[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// EMPLOYEE
+//////////////////////////////////////////////////////
+
+model Employee {
+  id         Int     @id @default(autoincrement())
+  accountId  Int     @unique
+  nationalId String  @unique @db.VarChar(13)
+  firstName  String
+  lastName   String
+  phone      String? @unique @db.VarChar(10)
+
+  houseNo     String?
+  village     String?
+  road        String?
+  alley       String?
+  subDistrict String?
+  district    String?
+  province    String?
+  postalCode  String?
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  approvedTransactions Transaction[] @relation("ApprovedTransaction")
+  approvedSales        Sale[]        @relation("ApprovedSale")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// MEMBER
+//////////////////////////////////////////////////////
+
+model Member {
+  id         Int     @id @default(autoincrement())
+  accountId  Int     @unique
+  nationalId String  @unique @db.VarChar(13)
+  firstName  String
+  lastName   String
+  phone      String? @unique @db.VarChar(10)
+
+  houseNo     String?
+  village     String?
+  road        String?
+  alley       String?
+  subDistrict String?
+  district    String?
+  province    String?
+  postalCode  String?
+
+  isActive Boolean @default(true)
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  wallet       Wallet?
+  sales        Sale[]
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// WALLET
+//////////////////////////////////////////////////////
+
+model Wallet {
+  id       Int   @id @default(autoincrement())
+  memberId Int   @unique
+  balance  Float @default(0)
+
+  member       Member        @relation(fields: [memberId], references: [id])
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// TRANSACTION
+//////////////////////////////////////////////////////
+
+model Transaction {
+  id         Int               @id @default(autoincrement())
+  walletId   Int
+  memberId   Int
+  type       WalletType
+  amount     Float
+  status     TransactionStatus @default(PENDING)
+  approvedBy Int?
+  note       String?
+
+  wallet   Wallet    @relation(fields: [walletId], references: [id])
+  member   Member    @relation(fields: [memberId], references: [id])
+  employee Employee? @relation("ApprovedTransaction", fields: [approvedBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// RECYCLE CATEGORY
+//////////////////////////////////////////////////////
+
+model RecycleCategory {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  wasteTypes WasteType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// WASTE TYPE
+//////////////////////////////////////////////////////
+
+model WasteType {
+  id    Int    @id @default(autoincrement())
+  name  String
+  price Float
+  unit  String
+
+  sales       Sale[]
+  publicSales PublicSale[]
+
+  categoryId Int
+  category   RecycleCategory? @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// SALE
+//////////////////////////////////////////////////////
+
+model Sale {
+  id          Int   @id @default(autoincrement())
+  memberId    Int
+  wasteTypeId Int
+  quantity    Float
+  totalPrice  Float
+
+  status TransactionStatus @default(PENDING)
+
+  approvedBy Int?
+  employee   Employee? @relation("ApprovedSale", fields: [approvedBy], references: [id])
+
+  member    Member    @relation(fields: [memberId], references: [id])
+  wasteType WasteType @relation(fields: [wasteTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// PUBLIC USER (บุคคลทั่วไป)
+//////////////////////////////////////////////////////
+
+model PublicUser {
+  id         Int    @id @default(autoincrement())
+  nationalId String @unique @db.VarChar(13)
+  firstName  String
+  lastName   String
+
+  sales PublicSale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([nationalId])
+}
+
+//////////////////////////////////////////////////////
+// PUBLIC SALE (รายการขายของบุคคลทั่วไป)
+//////////////////////////////////////////////////////
+
+model PublicSale {
+  id           Int   @id @default(autoincrement())
+  publicUserId Int
+  wasteTypeId  Int
+  quantity     Float
+  totalPrice   Float
+
+  publicUser PublicUser @relation(fields: [publicUserId], references: [id])
+  wasteType  WasteType  @relation(fields: [wasteTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// ANNOUNCEMENT
+//////////////////////////////////////////////////////
+
+model Announcement {
+  id         Int    @id @default(autoincrement())
+  title      String
+  content    String
+  createdBy  Int
+  newsstatus String @default("PUBLISHED")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// PasswordResetToken
+//////////////////////////////////////////////////////
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  accountId Int
+  expiresAt DateTime
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([token])
+}

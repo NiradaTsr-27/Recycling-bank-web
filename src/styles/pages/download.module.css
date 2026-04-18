@@ -1,0 +1,150 @@
+/* ===== PAGE ===== */
+.hero {
+  background: #ffffff;
+  padding: 80px 16px 100px;
+}
+
+.heroContent {
+  max-width: 1200px;
+  margin: auto;
+  text-align: center;
+}
+
+/* ===== TITLE ===== */
+.heroContent h1 {
+  font-size: 42px;
+  line-height: 1.2;
+  color: #0f2f1e;
+}
+
+/* ===== DOWNLOAD BUTTON (Mobile) ===== */
+.storeButtons {
+  margin: 32px 0;
+}
+
+.downloadBtn {
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+/* ===== DESKTOP MESSAGE ===== */
+.desktopOnly {
+  display: none;
+  margin-top: 24px;
+  background: #f2f2f2;
+  padding: 16px;
+  border-radius: 12px;
+  color: #333;
+}
+
+.desktopOnly span {
+  display: block;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* ===== PHONE PREVIEW ===== */
+.phonePreview {
+  display: flex;
+  justify-content: center;
+  gap: 0px;
+  margin-top: 48px;
+  flex-wrap: wrap;
+}
+
+.phonePreview img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===== FEATURES ===== */
+.features {
+  background: #0f2f1e;
+  padding: 80px 16px;
+  color: white;
+}
+
+.features h2 {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.featureGrid {
+  max-width: 1100px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.card {
+  background: white;
+  color: #0f2f1e;
+  border-radius: 16px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.card h3 {
+  margin: 16px 0 8px;
+}
+
+.card p {
+  padding: 0 16px 20px;
+  font-size: 14px;
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+  .hero {
+    padding: 48px 16px 60px;
+  }
+
+  .heroContent h1 {
+    font-size: 28px;
+  }
+
+  /* ซ่อน mockup บนมือถือ */
+  /* .phonePreview {
+    display: none;
+  } */
+
+  /* feature เป็น 1 คอลัมน์ */
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= TABLET ================= */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .heroContent h1 {
+    font-size: 34px;
+  }
+
+  .featureGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .phonePreview img {
+    width: 200px;
+  }
+}
+
+/* ================= DESKTOP ================= */
+@media (min-width: 1025px) {
+  /* ซ่อนปุ่มดาวน์โหลด */
+  .storeButtons {
+    display: none;
+  }
+
+  /* แสดงข้อความแทน */
+  .desktopOnly {
+    display: block;
+  }
+}

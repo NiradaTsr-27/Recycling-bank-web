@@ -1,0 +1,80 @@
+.container {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.card {
+  width: 1000px;
+  max-width: 95%;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 20px;
+}
+
+.card h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.tableHeader,
+.row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  padding: 15px 0;
+  border-bottom: 1px solid #ddd;
+  align-items: center;
+}
+
+.tableHeader {
+  font-weight: bold;
+}
+.table thead th {
+  position: sticky;
+  top: 0; 
+  background-color: #ffffff;
+  z-index: 10; 
+}
+
+.approved {
+  background: #c8f0d4;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.detailBtn {
+  background: #5b4bdb;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.backBtn {
+  margin-top: 30px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #d9d9d9;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Report Table Override */
+.table thead, .table thead th {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.table td {
+  padding: 14px 20px !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+}
+.table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}

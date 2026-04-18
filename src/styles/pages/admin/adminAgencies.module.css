@@ -1,0 +1,336 @@
+/* ================= BASE ================= */
+.container {
+  padding: 32px;
+}
+
+/* ================= HEADER ================= */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.addBtn {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* ================= CARD ================= */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  overflow-x: auto; /* ⭐ สำคัญสำหรับมือถือ */
+}
+
+/* ================= TABLE ================= */
+.table {
+  width: 100%;
+  min-width: 900px; /* ⭐ บังคับให้เลื่อนได้ */
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  background: #f5f5f5;
+  padding: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.mapLink {
+  color: var(--info);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ================= ACTION ICONS ================= */
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* EDIT */
+.edit,
+.delete {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: 0.2s ease;
+}
+
+.edit {
+  background-color: var(--info);
+  color: #fff;
+}
+
+.edit:hover {
+  background: #3b73ff;
+  transform: scale(1.05);
+}
+
+.delete {
+  background-color: var(--error);
+  color: #fff;
+}
+
+.delete:hover {
+  background: #bb2222;
+  transform: scale(1.1);
+}
+
+/* ================= MODAL ================= */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 18px;
+  padding: 28px;
+  width: 100%;
+  max-width: 900px;
+  box-shadow: var(--shadow);
+  max-height: 90vh;
+  overflow-y: auto; /* ⭐ มือถือไม่ล้นจอ */
+}
+
+.modal h2 {
+  margin-bottom: 20px;
+}
+
+/* ================= FORM ================= */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.formGrid label {
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.formGrid input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.full {
+  grid-column: span 2;
+}
+
+/* ================= MODAL ACTIONS ================= */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.cancel,
+.save {
+  padding: 10px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+}
+
+.cancel {
+  background: #c0c4c7;
+}
+
+.save {
+  background: var(--success);
+  color: #fff;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .addBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .table {
+    font-size: 13px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .full {
+    grid-column: span 1;
+  }
+
+  .modal {
+    padding: 20px;
+  }
+}
+
+/* ===== Delete Modal ===== */
+
+.deleteModal {
+  background: #ffffff;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.25s ease;
+}
+
+.deleteModal h3 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.deleteModal p {
+  font-size: 14px;
+  margin-bottom: 24px;
+  color: #444;
+}
+
+.deleteActions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.deleteConfirm {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.deleteConfirm:hover {
+  background: #b91c1c;
+}
+
+.deleteConfirm:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+
+.required {
+  color: red;
+  margin-left: 4px;
+}
+
+.inputError {
+  border: 1px solid red;
+  background-color: #ffe6e6;
+}
+
+.errorText {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  z-index: 9999;
+}
+
+.dropdown div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.dropdown div:hover {
+  background: #f3f3f3;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0; 
+  background-color: #ffffff;
+  z-index: 10; 
+}
+
+/* Report Table Override */
+.table thead, .table thead th {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.table td {
+  padding: 14px 20px !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+}
+.table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}

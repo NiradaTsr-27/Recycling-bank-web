@@ -1,0 +1,50 @@
+/* =========================
+   TABLES (Same as Report Page)
+========================= */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table thead {
+  background: var(--primary);
+  color: #fff;
+}
+
+.table th {
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: none;
+}
+
+.table td {
+  padding: 14px 20px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s;
+  color: var(--text-main);
+}
+
+.table tbody tr {
+  transition: var(--transition);
+}
+
+.table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}

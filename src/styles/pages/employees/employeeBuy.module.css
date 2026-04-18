@@ -1,0 +1,159 @@
+.container {
+  min-height: 100vh;
+  background: #f6f7f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.card {
+  background: #ffffff;
+  max-width: 800px; /* กว้างพอสำหรับ 2 คอลัม */
+  width: 100%;
+  padding: 40px 32px;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 30px;
+ 
+}
+
+/* Layout 2 คอลัม */
+.formRow {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  
+}
+
+.group {
+  flex: 1; /* ครึ่ง card width */
+  min-width: 200px; /* ป้องกันเล็กเกินไป */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.group label {
+  font-size: 14px;
+  color: #444;
+   margin-top: 10px;
+}
+
+.group input,
+.group select {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.group input:focus,
+.group select:focus {
+  border-color: #4caf50;
+}
+
+.group input:disabled {
+  background: #f2f2f2;
+}
+
+/* Submit button */
+.submitBtn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 30px;
+  border: none;
+  background: #4caf50;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.submitBtn:hover {
+  background: #43a047;
+  transform: translateY(-1px);
+}
+
+/* ปุ่มสถานะ */
+.statusBtnContainer {
+  display: flex;
+  gap: 12px;
+}
+
+.statusBtn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 30px;
+  border: 2px solid #ddd;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  background-color: #f2f2f2;
+  color: #444;
+}
+
+.statusBtn:hover {
+  transform: translateY(-2px);
+}
+
+.statusBtn.active {
+  background-color: #4caf50;
+  border-color: #4caf50;
+  color: #fff;
+}
+
+.statusBtn.pending {
+  border-color: #ff9800;
+}
+
+.statusBtn.approved {
+  border-color: #4caf50;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 400px;
+  text-align: center;
+}
+
+.modalBtn {
+  padding: 8px 16px;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  background-color: #4caf50;
+  color: #fff;
+}
+.modalBtn1 {
+  padding: 8px 16px;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  background-color: #919191;
+  color: #fff;
+}
