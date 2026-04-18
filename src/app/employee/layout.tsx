@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 
 export default async function EmployeeLayout({
