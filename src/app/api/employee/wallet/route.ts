@@ -1,7 +1,7 @@
-export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
+export const dynamic = "force-dynamic";
 
 //////////////////////////////////////////////////////////
 // GET (ดึงข้อมูลทั้งหมด)

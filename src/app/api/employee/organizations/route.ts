@@ -1,7 +1,7 @@
-export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
+export const dynamic = "force-dynamic";
 
 // ==============================
 // GET: ดึงหน่วยงานทั้งหมด

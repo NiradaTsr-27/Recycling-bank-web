@@ -1,8 +1,8 @@
-export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { requireEmployee } from "@/lib/authEmployee";
+export const dynamic = "force-dynamic";
 
 //////////////////////////////////////////////////////
 // UPDATE PASSWORD

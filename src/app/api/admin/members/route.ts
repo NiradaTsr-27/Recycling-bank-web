@@ -1,8 +1,8 @@
-export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authAdmin";
 import bcrypt from "bcryptjs";
+export const dynamic = "force-dynamic";
 
 //////////////////////////////////////////////////////
 // GET ALL MEMBERS
