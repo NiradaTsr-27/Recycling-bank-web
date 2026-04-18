@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
 import bcrypt from "bcryptjs";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 //////////////////////////////////////////////////////
 // GET MEMBER BY ID
@@ -13,7 +16,6 @@ export async function GET(
 ) {
   try {
     await requireEmployee();
-
     const member = await prisma.member.findUnique({
       where: { id: Number(params.id) },
       include: {
@@ -21,23 +23,18 @@ export async function GET(
         wallet: true,
       },
     });
-
     if (!member) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-
     return NextResponse.json(member);
   } catch (error: any) {
     console.error("GET MEMBER BY ID ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
 //////////////////////////////////////////////////////
 // UPDATE MEMBER
 //////////////////////////////////////////////////////
@@ -50,9 +47,7 @@ export async function PATCH(
 ) {
   try {
     await requireEmployee();
-
     const body = await req.json();
-
     const {
       email,
       password,
@@ -69,15 +64,12 @@ export async function PATCH(
       province,
       postalCode,
     } = body;
-
     const member = await prisma.member.findUnique({
       where: { id: Number(params.id) },
     });
-
     if (!member) {
       return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
-
     //////////////////////////////////////////////////////
     // VALIDATE EMAIL FORMAT
     //////////////////////////////////////////////////////
@@ -87,7 +79,6 @@ export async function PATCH(
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // CHECK DUPLICATE EMAIL
     //////////////////////////////////////////////////////
@@ -98,7 +89,6 @@ export async function PATCH(
           NOT: { id: member.accountId },
         },
       });
-
       if (existingEmail) {
         return NextResponse.json(
           { field: "email", message: "Email นี้ถูกใช้แล้ว" },
@@ -106,7 +96,6 @@ export async function PATCH(
         );
       }
     }
-
     //////////////////////////////////////////////////////
     // CHECK DUPLICATE PHONE
     //////////////////////////////////////////////////////
@@ -117,7 +106,6 @@ export async function PATCH(
           NOT: { id: Number(params.id) },
         },
       });
-
       if (existingPhone) {
         return NextResponse.json(
           { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
@@ -125,7 +113,6 @@ export async function PATCH(
         );
       }
     }
-
     //////////////////////////////////////////////////////
     // CHECK DUPLICATE NATIONAL ID
     //////////////////////////////////////////////////////
@@ -136,7 +123,6 @@ export async function PATCH(
           NOT: { id: Number(params.id) },
         },
       });
-
       if (existingNationalId) {
         return NextResponse.json(
           { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
@@ -144,7 +130,6 @@ export async function PATCH(
         );
       }
     }
-
     //////////////////////////////////////////////////////
     // TRANSACTION UPDATE
     //////////////////////////////////////////////////////
@@ -170,15 +155,12 @@ export async function PATCH(
               : null,
         },
       });
-
       // update account
       const accountUpdate: any = {};
-
       if (email) accountUpdate.email = email;
       if (password) {
         accountUpdate.password = await bcrypt.hash(password, 10);
       }
-
       if (Object.keys(accountUpdate).length > 0) {
         await tx.account.update({
           where: { id: member.accountId },
@@ -186,7 +168,6 @@ export async function PATCH(
         });
       }
     });
-
     //////////////////////////////////////////////////////
     // RETURN UPDATED DATA
     //////////////////////////////////////////////////////
@@ -197,19 +178,15 @@ export async function PATCH(
         wallet: true,
       },
     });
-
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("UPDATE MEMBER ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
 //////////////////////////////////////////////////////
 // DELETE MEMBER
 //////////////////////////////////////////////////////
@@ -219,35 +196,27 @@ export async function DELETE(
 ) {
   try {
     await requireEmployee();
-
     const member = await prisma.member.findUnique({
       where: { id: Number(params.id) },
     });
-
     if (!member) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-
     await prisma.wallet.deleteMany({
       where: { memberId: member.id },
     });
-
     await prisma.member.delete({
       where: { id: member.id },
     });
-
     await prisma.account.delete({
       where: { id: member.accountId },
     });
-
     return NextResponse.json({ message: "Deleted" });
   } catch (error: any) {
     console.error("DELETE MEMBER ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   }
 }

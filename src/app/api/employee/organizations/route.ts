@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 // ==============================
 // GET: ดึงหน่วยงานทั้งหมด
@@ -9,35 +12,28 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await requireEmployee();
-
     const organizations = await prisma.organization.findMany({
       orderBy: { id: "asc" },
     });
-
     return NextResponse.json(organizations);
   } catch (error: any) {
     console.error("GET ORGANIZATIONS ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json(
       { error: "โหลดหน่วยงานไม่สำเร็จ" },
       { status: 500 },
     );
   }
 }
-
 // ==============================
 // POST: เพิ่มหน่วยงานใหม่
 // ==============================
 export async function POST(req: Request) {
   try {
     await requireEmployee();
-
     const body = await req.json();
-
     const newOrganization = await prisma.organization.create({
       data: {
         name: body.name,
@@ -53,15 +49,12 @@ export async function POST(req: Request) {
         mapUrl: body.mapUrl || null,
       },
     });
-
     return NextResponse.json(newOrganization, { status: 201 });
   } catch (error: any) {
     console.error("POST ORGANIZATIONS ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json(
       { error: "เพิ่มหน่วยงานไม่สำเร็จ" },
       { status: 500 },

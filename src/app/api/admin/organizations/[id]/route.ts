@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 // ==============================
 // GET by ID
 // ==============================
@@ -10,18 +14,15 @@ export async function GET(
 ) {
   try {
     const id = Number(params.id);
-
     const organization = await prisma.organization.findUnique({
       where: { id },
       include: {
         employees: true, // เผื่ออยากดูว่ามีพนักงานกี่คน
       },
     });
-
     if (!organization) {
       return NextResponse.json({ message: "ไม่พบหน่วยงาน" }, { status: 404 });
     }
-
     return NextResponse.json(organization);
   } catch (error) {
     console.error(error);
@@ -31,7 +32,6 @@ export async function GET(
     );
   }
 }
-
 // ==============================
 // PATCH
 // ==============================
@@ -42,7 +42,6 @@ export async function PATCH(
   try {
     const id = Number(params.id);
     const body = await req.json();
-
     const updated = await prisma.organization.update({
       where: { id },
       data: {
@@ -59,14 +58,12 @@ export async function PATCH(
         mapUrl: body.mapUrl || null,
       },
     });
-
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "แก้ไขไม่สำเร็จ" }, { status: 500 });
   }
 }
-
 // ==============================
 // DELETE
 // ==============================
@@ -76,11 +73,9 @@ export async function DELETE(
 ) {
   try {
     const id = Number(params.id);
-
     await prisma.organization.delete({
       where: { id },
     });
-
     return NextResponse.json({ message: "ลบสำเร็จ" });
   } catch (error) {
     console.error(error);

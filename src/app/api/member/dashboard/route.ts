@@ -2,16 +2,17 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || session.user.role !== "MEMBER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const member = await prisma.member.findUnique({
       where: { accountId: Number(session.user.id) },
       include: {
@@ -25,24 +26,18 @@ export async function GET() {
         },
       },
     });
-
     if (!member) {
       return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
-
     // Calculate Dashboard Stats
     const balance = member.wallet?.balance || 0;
-    
     let totalEarned = 0;
     let totalWeight = 0;
-    
     member.sales.forEach(sale => {
       totalEarned += sale.totalPrice;
       totalWeight += sale.quantity;
     });
-
     const totalSales = member.sales.length;
-    
     // For recent transactions list, we can use the top 10 recent sales
     const recentSales = member.sales.slice(0, 10).map(sale => ({
       id: sale.id,
@@ -52,7 +47,6 @@ export async function GET() {
       totalPrice: sale.totalPrice,
       createdAt: sale.createdAt,
     }));
-
     // Fetch latest announcements
     const announcements = await prisma.announcement.findMany({
       where: { newsstatus: "PUBLISHED" },
@@ -65,7 +59,6 @@ export async function GET() {
         createdAt: true,
       }
     });
-
     // Fetch top 6 waste prices
     const wastePrices = await prisma.wasteType.findMany({
       orderBy: { price: "desc" },
@@ -74,7 +67,6 @@ export async function GET() {
         category: true
       }
     });
-
     return NextResponse.json({
       stats: {
         balance,

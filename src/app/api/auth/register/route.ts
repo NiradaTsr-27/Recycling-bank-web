@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
     const {
       username,
       password,
@@ -15,7 +18,6 @@ export async function POST(req: Request) {
       phone,
       email, // Optional for members in this context, but supported
     } = body;
-
     //////////////////////////////////////////////////////
     // REQUIRED VALIDATION
     //////////////////////////////////////////////////////
@@ -25,7 +27,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // VALIDATE NATIONAL ID (13 digits)
     //////////////////////////////////////////////////////
@@ -35,7 +36,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // VALIDATE PHONE (10 digits if provided)
     //////////////////////////////////////////////////////
@@ -45,7 +45,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // VALIDATE EMAIL FORMAT
     //////////////////////////////////////////////////////
@@ -55,29 +54,24 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // CHECK DUPLICATES
     //////////////////////////////////////////////////////
-
     // username
     const existingUsername = await prisma.account.findUnique({
       where: { username },
     });
-
     if (existingUsername) {
       return NextResponse.json(
         { field: "username", message: "Username นี้ถูกใช้แล้ว" },
         { status: 400 },
       );
     }
-
     // email
     if (email) {
       const existingEmail = await prisma.account.findUnique({
         where: { email },
       });
-
       if (existingEmail) {
         return NextResponse.json(
           { field: "email", message: "Email นี้ถูกใช้แล้ว" },
@@ -85,13 +79,11 @@ export async function POST(req: Request) {
         );
       }
     }
-
     // phone
     if (phone) {
       const existingPhone = await prisma.member.findUnique({
         where: { phone },
       });
-
       if (existingPhone) {
         return NextResponse.json(
           { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
@@ -99,21 +91,17 @@ export async function POST(req: Request) {
         );
       }
     }
-
     // nationalId
     const existingNationalId = await prisma.member.findUnique({
       where: { nationalId },
     });
-
     if (existingNationalId) {
       return NextResponse.json(
         { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
         { status: 400 },
       );
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     //////////////////////////////////////////////////////
     // TRANSACTION (ป้องกันข้อมูลค้าง)
     //////////////////////////////////////////////////////
@@ -124,7 +112,6 @@ export async function POST(req: Request) {
       if (!email) {
         throw new Error("EMAIL_REQUIRED");
       }
-
       const newAccount = await tx.account.create({
         data: {
           username,
@@ -132,7 +119,6 @@ export async function POST(req: Request) {
           password: hashedPassword,
         },
       });
-
       const newMember = await tx.member.create({
         data: {
           nationalId,
@@ -146,21 +132,17 @@ export async function POST(req: Request) {
           },
         },
       });
-
       return newMember;
     });
-
     return NextResponse.json({ message: "สมัครสมาชิกสำเร็จ" }, { status: 201 });
   } catch (error: any) {
     console.error("REGISTER MEMBER ERROR:", error);
-
     if (error.message === "EMAIL_REQUIRED") {
         return NextResponse.json(
             { field: "email", message: "กรุณาระบุ Email สำหรับใช้งานระบบ" },
             { status: 400 },
         );
     }
-
     if (error.code === "P2002") {
       const target = error.meta?.target?.[0] || error.meta?.target;
       if (typeof target === 'string') {
@@ -178,7 +160,6 @@ export async function POST(req: Request) {
         }
       }
     }
-
     return NextResponse.json(
       { error: "เกิดข้อผิดพลาดในการสมัครสมาชิก โปรดลองอีกครั้ง" },
       { status: 500 },

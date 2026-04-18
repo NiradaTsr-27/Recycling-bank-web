@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
 import bcrypt from "bcryptjs";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 //////////////////////////////////////////////////////
 // GET ALL MEMBERS
@@ -10,7 +13,6 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await requireEmployee();
-
     const members = await prisma.member.findMany({
       include: {
         account: {
@@ -23,28 +25,22 @@ export async function GET() {
       },
       orderBy: { createdAt: "desc" },
     });
-
     return NextResponse.json(members);
   } catch (error: any) {
     console.error("GET MEMBERS ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
 //////////////////////////////////////////////////////
 // CREATE MEMBER
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
   try {
     await requireEmployee();
-
     const body = await req.json();
-
     const {
       username,
       email,
@@ -62,7 +58,6 @@ export async function POST(req: Request) {
       province,
       postalCode,
     } = body;
-
     //////////////////////////////////////////////////////
     // REQUIRED VALIDATION
     //////////////////////////////////////////////////////
@@ -72,7 +67,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // VALIDATE NATIONAL ID (13 digits)
     //////////////////////////////////////////////////////
@@ -82,7 +76,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // VALIDATE PHONE (10 digits)
     //////////////////////////////////////////////////////
@@ -92,7 +85,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // VALIDATE EMAIL FORMAT
     //////////////////////////////////////////////////////
@@ -102,29 +94,24 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
     //////////////////////////////////////////////////////
     // CHECK DUPLICATES
     //////////////////////////////////////////////////////
-
     // username
     const existingUsername = await prisma.account.findUnique({
       where: { username },
     });
-
     if (existingUsername) {
       return NextResponse.json(
         { field: "username", message: "Username นี้ถูกใช้แล้ว" },
         { status: 400 },
       );
     }
-
     // email
     if (email) {
       const existingEmail = await prisma.account.findUnique({
         where: { email },
       });
-
       if (existingEmail) {
         return NextResponse.json(
           { field: "email", message: "Email นี้ถูกใช้แล้ว" },
@@ -132,13 +119,11 @@ export async function POST(req: Request) {
         );
       }
     }
-
     // phone
     if (phone) {
       const existingPhone = await prisma.member.findUnique({
         where: { phone },
       });
-
       if (existingPhone) {
         return NextResponse.json(
           { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
@@ -146,21 +131,17 @@ export async function POST(req: Request) {
         );
       }
     }
-
     // nationalId
     const existingNationalId = await prisma.member.findUnique({
       where: { nationalId },
     });
-
     if (existingNationalId) {
       return NextResponse.json(
         { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
         { status: 400 },
       );
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     //////////////////////////////////////////////////////
     // TRANSACTION (ป้องกันข้อมูลค้าง)
     //////////////////////////////////////////////////////
@@ -172,7 +153,6 @@ export async function POST(req: Request) {
           password: hashedPassword,
         },
       });
-
       const newMember = await tx.member.create({
         data: {
           nationalId,
@@ -202,41 +182,34 @@ export async function POST(req: Request) {
           wallet: true,
         },
       });
-
       return newMember;
     });
-
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
     console.error("CREATE MEMBER ERROR:", error);
-
     //////////////////////////////////////////////////////
     // HANDLE PRISMA UNIQUE ERROR
     //////////////////////////////////////////////////////
     if (error.code === "P2002") {
       const target = error.meta?.target?.[0];
-
       if (target === "phone") {
         return NextResponse.json(
           { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
           { status: 400 },
         );
       }
-
       if (target === "nationalId") {
         return NextResponse.json(
           { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
           { status: 400 },
         );
       }
-
       if (target === "username") {
         return NextResponse.json(
           { field: "username", message: "Username นี้ถูกใช้แล้ว" },
           { status: 400 },
         );
       }
-
       if (target === "email") {
         return NextResponse.json(
           { field: "email", message: "Email นี้ถูกใช้แล้ว" },
@@ -244,7 +217,6 @@ export async function POST(req: Request) {
         );
       }
     }
-
     return NextResponse.json(
       { error: "เกิดข้อผิดพลาดในการสร้างสมาชิก" },
       { status: 500 },

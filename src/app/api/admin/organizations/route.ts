@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 // ==============================
 // GET: ดึงหน่วยงานทั้งหมด
 // ==============================
@@ -9,7 +13,6 @@ export async function GET() {
     const organizations = await prisma.organization.findMany({
       orderBy: { id: "asc" },
     });
-
     return NextResponse.json(organizations);
   } catch (error) {
     console.error("โหลดหน่วยงานไม่สำเร็จ:", error);
@@ -19,14 +22,12 @@ export async function GET() {
     );
   }
 }
-
 // ==============================
 // POST: เพิ่มหน่วยงานใหม่
 // ==============================
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
     const newOrganization = await prisma.organization.create({
       data: {
         name: body.name,
@@ -42,7 +43,6 @@ export async function POST(req: Request) {
         mapUrl: body.mapUrl || null,
       },
     });
-
     return NextResponse.json(newOrganization, { status: 201 });
   } catch (error) {
     console.error("เพิ่มหน่วยงานไม่สำเร็จ:", error);

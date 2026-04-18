@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authAdmin";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function PATCH(
   req: Request,
@@ -9,14 +12,11 @@ export async function PATCH(
 ) {
   try {
     await requireAdmin();
-
     const { isActive } = await req.json();
-
     const updated = await prisma.member.update({
       where: { id: Number(params.id) },
       data: { isActive },
     });
-
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);

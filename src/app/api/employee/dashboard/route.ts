@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { TransactionStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 //////////////////////////////////////////////////////
 // GET DASHBOARD STATS
@@ -10,14 +13,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await requireEmployee();
-
     const today = new Date();
     const startOfDay = new Date(
       today.getFullYear(),
       today.getMonth(),
       today.getDate(),
     );
-
     const [
       totalMembers,
       todaySales,
@@ -28,7 +29,6 @@ export async function GET() {
       todayPublicRevenue,
     ] = await Promise.all([
       prisma.member.count(),
-
       prisma.sale.findMany({
         where: {
           createdAt: { gte: startOfDay },
@@ -45,7 +45,6 @@ export async function GET() {
         },
         orderBy: { id: "asc" },
       }),
-
       prisma.sale.aggregate({
         _sum: { totalPrice: true },
         where: {
@@ -53,18 +52,15 @@ export async function GET() {
           createdAt: { gte: startOfDay },
         },
       }),
-
       prisma.sale.count({
         where: {
           status: TransactionStatus.PENDING,
         },
       }),
-
       prisma.recycleCategory.findMany({
         select: { id: true, name: true },
         orderBy: { id: "asc" },
       }),
-
       prisma.publicSale.findMany({
         where: {
           createdAt: { gte: startOfDay },
@@ -80,7 +76,6 @@ export async function GET() {
           },
         },
       }),
-
       prisma.publicSale.aggregate({
         _sum: { totalPrice: true },
         where: {
@@ -88,13 +83,10 @@ export async function GET() {
         },
       }),
     ]);
-
     const totalTransactions = todaySales.length + todayPublicSales.length;
-
     const totalRevenue =
       (todayRevenue._sum?.totalPrice ?? 0) +
       (todayPublicRevenue._sum?.totalPrice ?? 0);
-
     const wasteList = todaySales.map((sale) => ({
       id: sale.id,
       name: sale.wasteType.name,
@@ -103,7 +95,6 @@ export async function GET() {
       createdAt: sale.createdAt.toISOString(),
       source: "MEMBER",
     }));
-
     const publicWasteList = todayPublicSales.map((sale) => ({
       id: sale.id,
       name: sale.wasteType.name,
@@ -112,9 +103,7 @@ export async function GET() {
       createdAt: sale.createdAt.toISOString(),
       source: "PUBLIC",
     }));
-
     const mergedWasteList = [...wasteList, ...publicWasteList];
-
     return NextResponse.json({
       stats: {
         totalMembers,
@@ -127,11 +116,9 @@ export async function GET() {
     });
   } catch (error: any) {
     console.error("GET DASHBOARD ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

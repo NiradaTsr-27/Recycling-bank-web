@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 //////////////////////////////////////////////////////
 // GET -> โหลด option dropdown
@@ -9,7 +12,6 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await requireEmployee();
-
     const members = await prisma.member.findMany({
       select: {
         id: true,
@@ -18,7 +20,6 @@ export async function GET() {
       },
       orderBy: { firstName: "asc" },
     });
-
     const employees = await prisma.employee.findMany({
       select: {
         id: true,
@@ -27,7 +28,6 @@ export async function GET() {
       },
       orderBy: { firstName: "asc" },
     });
-
     // รายการขยะ
     const wastes = await prisma.wasteType.findMany({
       select: {
@@ -38,7 +38,6 @@ export async function GET() {
       },
       orderBy: { name: "asc" },
     });
-
     return NextResponse.json({
       members,
       employees,
@@ -46,49 +45,39 @@ export async function GET() {
     });
   } catch (error: any) {
     console.error("GET BUY ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json(
       { error: "Failed to load dropdown data" },
       { status: 500 },
     );
   }
 }
-
 //////////////////////////////////////////////////////
 // POST -> บันทึกการรับซื้อขยะ
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
   try {
     await requireEmployee();
-
     const body = await req.json();
-
     const { memberId, employeeId, wasteTypeId, quantity } = body;
-
     if (!memberId || !employeeId || !wasteTypeId || !quantity) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
       );
     }
-
     const waste = await prisma.wasteType.findUnique({
       where: { id: Number(wasteTypeId) },
     });
-
     if (!waste) {
       return NextResponse.json(
         { error: "Waste type not found" },
         { status: 404 },
       );
     }
-
     const totalPrice = waste.price * Number(quantity);
-
     // 🔥 ใช้ transaction กันพัง
     const result = await prisma.$transaction(async (tx) => {
       // 1. สร้าง sale
@@ -102,13 +91,11 @@ export async function POST(req: Request) {
           approvedBy: body.status === "APPROVED" ? Number(employeeId) : null,
         },
       });
-
       // 2. ถ้า APPROVED → ใส่เงินทันที
       if (sale.status === "APPROVED") {
         let wallet = await tx.wallet.findUnique({
           where: { memberId: sale.memberId },
         });
-
         // 🔥 ไม่มี wallet → สร้าง
         if (!wallet) {
           wallet = await tx.wallet.create({
@@ -118,7 +105,6 @@ export async function POST(req: Request) {
             },
           });
         }
-
         // 🔥 เพิ่มเงิน
         await tx.wallet.update({
           where: { id: wallet.id },
@@ -128,7 +114,6 @@ export async function POST(req: Request) {
             },
           },
         });
-
         // 🔥 บันทึก transaction
         await tx.transaction.create({
           data: {
@@ -141,21 +126,17 @@ export async function POST(req: Request) {
           },
         });
       }
-
       return sale;
     });
-
     return NextResponse.json({
       message: "Sale created",
       sale: result,
     });
   } catch (error: any) {
     console.error("POST BUY ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

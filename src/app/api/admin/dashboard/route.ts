@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 const prisma = new PrismaClient();
-
 export async function GET() {
   try {
     const today = new Date();
@@ -12,7 +14,6 @@ export async function GET() {
       today.getMonth(),
       today.getDate(),
     );
-
     const [
       totalMembers,
       totalEmployees,
@@ -76,7 +77,6 @@ export async function GET() {
         },
       }),
     ]);
-
     // Activities
     const activities = [
       ...latestMembers.map((m) => ({
@@ -93,30 +93,25 @@ export async function GET() {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 5)
       .map(({ type, text }) => ({ type, text }));
-
     // Monthly Revenue
     const monthlyRevenue = Array(12).fill(0);
     salesByMonth.forEach(
       (m) => (monthlyRevenue[m.month - 1] = Number(m.total)),
     );
-
     // Notifications
     const notifications = [
       `สมาชิกใหม่วันนี้ ${latestMembers.length} คน`,
       `ยอดขายวันนี้ ${todaySales._sum.totalPrice?.toLocaleString() || 0} บาท`,
     ];
-
     // Format Top Members / Top Sales
     const topMembers = topMembersRaw.map((m) => ({
       name: `${m.firstName} ${m.lastName}`,
       purchases: m.totalPurchases || 0,
     }));
-
     const topSales = topSalesRaw.map((s) => ({
       item: s.wasteType.name, // ✅ ใช้ชื่อ wasteType แทน item
       amount: s.totalPrice,
     }));
-
     return NextResponse.json({
       totalMembers,
       totalEmployees,

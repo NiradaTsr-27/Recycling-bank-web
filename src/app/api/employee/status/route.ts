@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireEmployee } from "@/lib/authEmployee";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 //////////////////////////////////////////////////////
 // GET : ดึงรายการขายทั้งหมด
@@ -9,7 +12,6 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await requireEmployee();
-
     const sales = await prisma.sale.findMany({
       include: {
         member: true,
@@ -18,7 +20,6 @@ export async function GET() {
       },
       orderBy: { createdAt: "desc" },
     });
-
     const result = sales.map((sale) => ({
       id: sale.id,
       member: sale.member
@@ -38,15 +39,12 @@ export async function GET() {
         ? `${sale.employee.firstName} ${sale.employee.lastName}`
         : "-",
     }));
-
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("GET STATUS ERROR:", error);
-
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     return NextResponse.json(
       { error: "Failed to fetch sales" },
       { status: 500 },

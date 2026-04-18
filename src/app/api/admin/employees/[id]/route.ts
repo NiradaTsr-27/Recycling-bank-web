@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authAdmin";
 import bcrypt from "bcryptjs";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 //////////////////////////////////////////////////////
 // GET EMPLOYEE BY ID
@@ -13,7 +16,6 @@ export async function GET(
 ) {
   try {
     await requireAdmin();
-
     const employee = await prisma.employee.findUnique({
       where: { id: Number(params.id) },
       include: {
@@ -21,20 +23,17 @@ export async function GET(
         organization: true,
       },
     });
-
     if (!employee) {
       return NextResponse.json(
         { error: "Employee not found" },
         { status: 404 },
       );
     }
-
     return NextResponse.json(employee);
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }
-
 //////////////////////////////////////////////////////
 // UPDATE EMPLOYEE
 //////////////////////////////////////////////////////
@@ -44,9 +43,7 @@ export async function PATCH(
 ) {
   try {
     await requireAdmin();
-
     const body = await req.json();
-
     const {
       username,
       email,
@@ -65,18 +62,15 @@ export async function PATCH(
       postalCode,
       organizationId,
     } = body;
-
     const employee = await prisma.employee.findUnique({
       where: { id: Number(params.id) },
     });
-
     if (!employee) {
       return NextResponse.json(
         { error: "Employee not found" },
         { status: 404 },
       );
     }
-
     // -------------------------------
     // validate email
     // -------------------------------
@@ -86,7 +80,6 @@ export async function PATCH(
         { status: 400 },
       );
     }
-
     // -------------------------------
     // check duplicate username
     // -------------------------------
@@ -97,7 +90,6 @@ export async function PATCH(
           NOT: { id: employee.accountId },
         },
       });
-
       if (existingUsername) {
         return NextResponse.json(
           { error: "Username already exists" },
@@ -105,7 +97,6 @@ export async function PATCH(
         );
       }
     }
-
     // -------------------------------
     // check duplicate email
     // -------------------------------
@@ -116,7 +107,6 @@ export async function PATCH(
           NOT: { id: employee.accountId },
         },
       });
-
       if (existingEmail) {
         return NextResponse.json(
           { error: "Email already exists" },
@@ -124,7 +114,6 @@ export async function PATCH(
         );
       }
     }
-
     // -------------------------------
     // check duplicate phone
     // -------------------------------
@@ -135,7 +124,6 @@ export async function PATCH(
           NOT: { id: Number(params.id) },
         },
       });
-
       if (existingPhone) {
         return NextResponse.json(
           { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
@@ -143,7 +131,6 @@ export async function PATCH(
         );
       }
     }
-
     // -------------------------------
     // check duplicate nationalId
     // -------------------------------
@@ -154,7 +141,6 @@ export async function PATCH(
           NOT: { id: Number(params.id) },
         },
       });
-
       if (existingNationalId) {
         return NextResponse.json(
           { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
@@ -162,7 +148,6 @@ export async function PATCH(
         );
       }
     }
-
     // -------------------------------
     // TRANSACTION UPDATE
     // -------------------------------
@@ -182,28 +167,23 @@ export async function PATCH(
           subDistrict,
           district,
           province,
-
           postalCode:
             postalCode !== undefined && postalCode !== null && postalCode !== ""
               ? String(postalCode)
               : null,
-
           organizationId:
             organizationId && organizationId !== ""
               ? Number(organizationId)
               : null,
         },
       });
-
       // update account
       const accountUpdate: any = {};
-
       if (username) accountUpdate.username = username;
       if (email) accountUpdate.email = email;
       if (password) {
         accountUpdate.password = await bcrypt.hash(password, 10);
       }
-
       if (Object.keys(accountUpdate).length > 0) {
         await tx.account.update({
           where: { id: employee.accountId },
@@ -211,7 +191,6 @@ export async function PATCH(
         });
       }
     });
-
     const updated = await prisma.employee.findUnique({
       where: { id: Number(params.id) },
       include: {
@@ -219,11 +198,9 @@ export async function PATCH(
         organization: true,
       },
     });
-
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("UPDATE ERROR:", error);
-
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -236,18 +213,15 @@ export async function DELETE(
 ) {
   try {
     await requireAdmin();
-
     const employee = await prisma.employee.findUnique({
       where: { id: Number(params.id) },
     });
-
     if (!employee) {
       return NextResponse.json(
         { error: "Employee not found" },
         { status: 404 },
       );
     }
-
     // atomic delete
     await prisma.$transaction([
       prisma.employee.delete({
@@ -257,7 +231,6 @@ export async function DELETE(
         where: { id: employee.accountId },
       }),
     ]);
-
     return NextResponse.json({ message: "Employee deleted" });
   } catch (error) {
     console.error(error);

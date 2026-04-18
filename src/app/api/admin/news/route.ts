@@ -3,7 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authAdmin";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 //////////////////////////////////////////////////////
 // GET: ดึงประกาศทั้งหมด
 //////////////////////////////////////////////////////
@@ -12,7 +16,6 @@ export async function GET() {
     const announcements = await prisma.announcement.findMany({
       orderBy: { createdAt: "desc" },
     });
-
     return NextResponse.json(announcements);
   } catch (error) {
     console.error(error);
@@ -22,30 +25,24 @@ export async function GET() {
     );
   }
 }
-
 //////////////////////////////////////////////////////
 // POST: เพิ่มประกาศ
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
   try {
     await requireAdmin();
-
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
     const body = await req.json();
     const { title, content, newsstatus } = body;
-
     if (!title || !content) {
       return NextResponse.json(
         { message: "กรุณากรอกข้อมูลให้ครบ" },
         { status: 400 },
       );
     }
-
     const newAnnouncement = await prisma.announcement.create({
       data: {
         title,
@@ -54,7 +51,6 @@ export async function POST(req: Request) {
         createdBy: Number(session.user.id), // 🔥 สำคัญมาก
       },
     });
-
     return NextResponse.json(newAnnouncement, { status: 201 });
   } catch (error: any) {
     console.error("Create announcement error:", error);
