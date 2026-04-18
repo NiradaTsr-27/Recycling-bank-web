@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authAdmin";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-
+export const dynamic = "force-dynamic";
 //////////////////////////////////////////////////////
 // GET: ดึงประกาศทั้งหมด
 //////////////////////////////////////////////////////
