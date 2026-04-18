@@ -1,8 +1,11 @@
-import dynamic from "next/dynamic";
+export const dynamic = "force-dynamic";
 
-const AdminAgenciesClient = dynamic(() => import("./AdminAgenciesClient"), {
-  ssr: false,
-});
+import dynamicImport from "next/dynamic";
+
+const AdminAgenciesClient = dynamicImport(
+  () => import("./AdminAgenciesClient"),
+  { ssr: false }
+);
 
 export default function AdminAgenciesPage() {
   return <AdminAgenciesClient />;
