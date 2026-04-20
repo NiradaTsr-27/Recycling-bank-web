@@ -7,14 +7,6 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-// ✅ กัน build พัง (สำคัญมาก)
-const safeRequireAdmin = async () => {
-  try {
-    return await requireAdmin();
-  } catch {
-    return null;
-  }
-};
 
 
 //////////////////////////////////////////////////////
@@ -24,10 +16,13 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  const adminAuth = await safeRequireAdmin();
-
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await requireAdmin();
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    throw error;
   }
 
   try {
@@ -57,10 +52,13 @@ export async function PATCH(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  const adminAuth = await safeRequireAdmin();
-
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await requireAdmin();
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    throw error;
   }
 
   try {
@@ -208,10 +206,13 @@ export async function DELETE(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  const adminAuth = await safeRequireAdmin();
-
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await requireAdmin();
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    throw error;
   }
 
   try {
