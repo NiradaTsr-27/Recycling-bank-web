@@ -6,13 +6,28 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
+  try {
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
 //////////////////////////////////////////////////////
 // GET ALL WASTE TYPES
 //////////////////////////////////////////////////////
 export async function GET() {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const wastes = await prisma.wasteType.findMany({
+const wastes = await prisma.wasteType.findMany({
       include: {
         category: true,
       },
@@ -28,9 +43,14 @@ export async function GET() {
 // CREATE WASTE TYPE
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const body = await req.json();
+const body = await req.json();
     const { name, price, unit, categoryId } = body;
     //////////////////////////////////////////////////////
     // VALIDATE

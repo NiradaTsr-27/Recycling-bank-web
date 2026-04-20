@@ -7,6 +7,16 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
+  try {
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
 //////////////////////////////////////////////////////
 // GET EMPLOYEE BY ID
 //////////////////////////////////////////////////////
@@ -14,9 +24,14 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const employee = await prisma.employee.findUnique({
+const employee = await prisma.employee.findUnique({
       where: { id: Number(params.id) },
       include: {
         account: true,
@@ -30,8 +45,9 @@ export async function GET(
       );
     }
     return NextResponse.json(employee);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 //////////////////////////////////////////////////////
@@ -41,9 +57,14 @@ export async function PATCH(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const body = await req.json();
+const body = await req.json();
     const {
       username,
       email,
@@ -211,9 +232,14 @@ export async function DELETE(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const employee = await prisma.employee.findUnique({
+const employee = await prisma.employee.findUnique({
       where: { id: Number(params.id) },
     });
     if (!employee) {

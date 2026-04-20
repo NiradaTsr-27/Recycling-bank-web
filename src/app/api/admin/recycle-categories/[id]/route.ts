@@ -6,6 +6,16 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
+  try {
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
 //////////////////////////////////////////////////////
 // GET BY ID
 //////////////////////////////////////////////////////
@@ -13,9 +23,14 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const category = await prisma.recycleCategory.findUnique({
+const category = await prisma.recycleCategory.findUnique({
       where: { id: Number(params.id) },
     });
     if (!category) {
@@ -33,9 +48,14 @@ export async function PATCH(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const body = await req.json();
+const body = await req.json();
     const updated = await prisma.recycleCategory.update({
       where: { id: Number(params.id) },
       data: {
@@ -55,9 +75,14 @@ export async function DELETE(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const id = Number(params.id);
+const id = Number(params.id);
     // 🔥 ป้องกันลบถ้ามี waste ใช้อยู่
     const used = await prisma.wasteType.findFirst({
       where: { categoryId: id },

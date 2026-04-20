@@ -7,13 +7,28 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
+  try {
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
 //////////////////////////////////////////////////////
 // GET ALL ADMINS
 //////////////////////////////////////////////////////
 export async function GET() {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const admins = await prisma.admin.findMany({
+const admins = await prisma.admin.findMany({
       include: {
         account: {
           select: {
@@ -24,17 +39,23 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(admins);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 //////////////////////////////////////////////////////
 // CREATE ADMIN
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const body = await req.json();
+const body = await req.json();
     const { firstName, lastName, username, email, password, nationalId } = body;
     if (!firstName || !lastName || !username || !password || !email) {
       return NextResponse.json(

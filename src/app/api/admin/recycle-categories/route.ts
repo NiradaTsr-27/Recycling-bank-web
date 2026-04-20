@@ -6,21 +6,42 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-export async function GET() {
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
   try {
-    await requireAdmin();
-    const categories = await prisma.recycleCategory.findMany({
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
+export async function GET() {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+const categories = await prisma.recycleCategory.findMany({
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(categories);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 export async function POST(req: Request) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const body = await req.json();
+const body = await req.json();
     const category = await prisma.recycleCategory.create({
       data: { name: body.name },
     });

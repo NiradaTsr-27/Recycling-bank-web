@@ -8,10 +8,26 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
+  try {
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
 //////////////////////////////////////////////////////
 // GET: ดึงประกาศทั้งหมด
 //////////////////////////////////////////////////////
 export async function GET() {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const announcements = await prisma.announcement.findMany({
       orderBy: { createdAt: "desc" },
@@ -29,9 +45,14 @@ export async function GET() {
 // POST: เพิ่มประกาศ
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const session = await getServerSession(authOptions);
+const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }

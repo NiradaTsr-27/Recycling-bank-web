@@ -6,6 +6,16 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
+  try {
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
 //////////////////////////////////////////////////////
 // GET BY ID
 //////////////////////////////////////////////////////
@@ -13,17 +23,23 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const waste = await prisma.wasteType.findUnique({
+const waste = await prisma.wasteType.findUnique({
       where: { id: Number(params.id) },
     });
     if (!waste) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     return NextResponse.json(waste);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 //////////////////////////////////////////////////////
@@ -33,9 +49,14 @@ export async function PATCH(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    const body = await req.json();
+const body = await req.json();
     const { name, price, unit, categoryId } = body;
     const updated = await prisma.wasteType.update({
       where: { id: Number(params.id) },
@@ -59,9 +80,14 @@ export async function DELETE(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    await requireAdmin();
-    await prisma.wasteType.delete({
+await prisma.wasteType.delete({
       where: { id: Number(params.id) },
     });
     return NextResponse.json({ message: "Deleted" });
