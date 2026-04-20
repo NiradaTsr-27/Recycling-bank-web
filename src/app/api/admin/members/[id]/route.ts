@@ -7,6 +7,17 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+// ✅ กัน build พัง (สำคัญมาก)
+const safeRequireAdmin = async () => {
+  try {
+    return await requireAdmin();
+  } catch {
+    return null;
+  }
+};
+
+
+
 
 
 //////////////////////////////////////////////////////
@@ -16,14 +27,13 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  try {
-    await requireAdmin();
-  } catch (error: any) {
-    if (error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    throw error;
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+
 
   try {
 const member = await prisma.member.findUnique({
@@ -52,14 +62,13 @@ export async function PATCH(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  try {
-    await requireAdmin();
-  } catch (error: any) {
-    if (error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    throw error;
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+
 
   try {
 const body = await req.json();
@@ -206,14 +215,13 @@ export async function DELETE(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  try {
-    await requireAdmin();
-  } catch (error: any) {
-    if (error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    throw error;
+  const adminAuth = await safeRequireAdmin();
+
+  if (!adminAuth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+
 
   try {
 const member = await prisma.member.findUnique({
