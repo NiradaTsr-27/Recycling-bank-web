@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authAdmin";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
 // ✅ กัน build พัง (สำคัญมาก)
 const safeRequireAdmin = async () => {
   try {

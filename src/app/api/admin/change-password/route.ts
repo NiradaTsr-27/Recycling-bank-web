@@ -3,11 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-export const fetchCache = "force-no-store";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-export const revalidate = 0;
 
 export async function PUT(req: Request) {
 

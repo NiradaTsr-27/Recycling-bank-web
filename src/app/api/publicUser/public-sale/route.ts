@@ -1,11 +1,5 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
 const prisma = new PrismaClient();
 // ✅ POST: บันทึกการขายของบุคคลทั่วไป
 export async function POST(req: Request) {

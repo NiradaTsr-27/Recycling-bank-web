@@ -4,12 +4,6 @@ import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
-
 export async function PUT(req: Request) {
 
       try {
