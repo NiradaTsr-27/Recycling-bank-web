@@ -23,7 +23,7 @@ export async function GET() {
           todaySales,
           latestMembers,
           latestSales,
-          salesByMonth,
+          salesByMonthRaw,
           topMembersRaw,
           topSalesRaw,
         ] = await Promise.all([
@@ -45,37 +45,24 @@ export async function GET() {
             take: 3,
             select: { totalPrice: true, createdAt: true },
           }),
-          prisma.$queryRaw<{ month: number; total: number }[]>`
-        SELECT EXTRACT(MONTH FROM "createdAt") AS month,
-               SUM("totalPrice") AS total
-        FROM "Sale"
-        WHERE status = 'APPROVED'
-        GROUP BY month
-      `,
-          // Top Members
-          prisma.$queryRaw<
-            {
-              memberId: number;
-              firstName: string;
-              lastName: string;
-              totalPurchases: number;
-            }[]
-          >`
-        SELECT m.id as "memberId", m."firstName", m."lastName", SUM(s."totalPrice") AS "totalPurchases"
-        FROM "Member" m
-        LEFT JOIN "Sale" s ON m.id = s."memberId" AND s.status = 'APPROVED'
-        GROUP BY m.id
-        ORDER BY "totalPurchases" DESC
-        LIMIT 5
-      `,
-          // Top Sales
+          prisma.sale.findMany({
+            where: { status: "APPROVED" },
+            select: { totalPrice: true, createdAt: true },
+          }),
+          prisma.sale.groupBy({
+            by: ["memberId"],
+            where: { status: "APPROVED" },
+            _sum: { totalPrice: true },
+            orderBy: { _sum: { totalPrice: "desc" } },
+            take: 5,
+          }),
           prisma.sale.findMany({
             where: { status: "APPROVED" },
             orderBy: { totalPrice: "desc" },
             take: 5,
             select: {
               totalPrice: true,
-              wasteType: { select: { name: true } }, // ✅ แก้ตรงนี้
+              wasteType: { select: { name: true } },
             },
           }),
         ]);
@@ -97,21 +84,37 @@ export async function GET() {
           .map(({ type, text }) => ({ type, text }));
         // Monthly Revenue
         const monthlyRevenue = Array(12).fill(0);
-        salesByMonth.forEach(
-          (m) => (monthlyRevenue[m.month - 1] = Number(m.total)),
+        salesByMonthRaw.forEach((sale) => {
+          const monthIndex = sale.createdAt.getMonth();
+          monthlyRevenue[monthIndex] += sale.totalPrice;
+        });
+
+        // Top Members
+        const topMemberIds = topMembersRaw.map((group) => group.memberId);
+        const topMemberRecords = await prisma.member.findMany({
+          where: { id: { in: topMemberIds } },
+          select: { id: true, firstName: true, lastName: true },
+        });
+        const topMemberMap = new Map(
+          topMemberRecords.map((member) => [member.id, member]),
         );
+        const topMembers = topMembersRaw.map((group) => {
+          const member = topMemberMap.get(group.memberId);
+          return {
+            name: member
+              ? `${member.firstName} ${member.lastName}`
+              : `สมาชิก ${group.memberId}`,
+            purchases: Number(group._sum.totalPrice ?? 0),
+          };
+        });
+
         // Notifications
         const notifications = [
           `สมาชิกใหม่วันนี้ ${latestMembers.length} คน`,
           `ยอดขายวันนี้ ${todaySales._sum.totalPrice?.toLocaleString() || 0} บาท`,
         ];
-        // Format Top Members / Top Sales
-        const topMembers = topMembersRaw.map((m) => ({
-          name: `${m.firstName} ${m.lastName}`,
-          purchases: m.totalPurchases || 0,
-        }));
         const topSales = topSalesRaw.map((s) => ({
-          item: s.wasteType.name, // ✅ ใช้ชื่อ wasteType แทน item
+          item: s.wasteType.name,
           amount: s.totalPrice,
         }));
         return NextResponse.json({
