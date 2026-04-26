@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
-
-const prisma = new PrismaClient();
 export async function GET() {
 
       try {
@@ -129,7 +127,11 @@ export async function GET() {
         });
       } catch (error) {
         console.error("Dashboard API Error:", error);
-        return NextResponse.json({ message: "Error" }, { status: 500 });
+        const message =
+          process.env.NODE_ENV !== "production"
+            ? String(error)
+            : "Internal Server Error";
+        return NextResponse.json({ message }, { status: 500 });
       }
       } catch (err: any) {
         if (err && err.message === "Unauthorized") {

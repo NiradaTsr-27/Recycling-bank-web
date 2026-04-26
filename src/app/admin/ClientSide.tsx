@@ -72,7 +72,9 @@ export default function AdminDashboardPage() {
         const res = await fetch("/api/admin/dashboard", { cache: "no-store" });
         const data = await res.json();
         if (!res.ok)
-          throw new Error(data.message || "Failed to fetch dashboard");
+          throw new Error(
+            data.message || data.error || "Failed to fetch dashboard",
+          );
 
         // default values
         data.monthlyRevenue =
