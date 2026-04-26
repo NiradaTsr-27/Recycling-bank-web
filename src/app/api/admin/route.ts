@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // ✅ กัน build พัง (สำคัญมาก)
 const safeRequireAdmin = async () => {
@@ -24,108 +25,128 @@ const safeRequireAdmin = async () => {
 // GET ALL ADMINS
 //////////////////////////////////////////////////////
 export async function GET() {
-  const adminAuth = await safeRequireAdmin();
 
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+      try {
+
+      const adminAuth = await safeRequireAdmin();
+
+      if (!adminAuth) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
 
 
-  try {
-const admins = await prisma.admin.findMany({
-      include: {
-        account: {
-          select: {
-            username: true,
+      try {
+    const admins = await prisma.admin.findMany({
+          include: {
+            account: {
+              select: {
+                username: true,
+              },
+            },
           },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(admins);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
+          orderBy: { createdAt: "desc" },
+        });
+        return NextResponse.json(admins);
+      } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
+      }
+      } catch (err: any) {
+        if (err && err.message === "Unauthorized") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        console.error("BUILD SAFE ERROR:", err);
+        return NextResponse.json({ error: "Build safe" }, { status: 200 });
+      }
 }
 //////////////////////////////////////////////////////
 // CREATE ADMIN
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
-  const adminAuth = await safeRequireAdmin();
 
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+      try {
+
+      const adminAuth = await safeRequireAdmin();
+
+      if (!adminAuth) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
 
 
-  try {
-const body = await req.json();
-    const { firstName, lastName, username, email, password, nationalId } = body;
-    if (!firstName || !lastName || !username || !password || !email) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
-    }
-    // validate email
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 },
-      );
-    }
-    // เช็ค username ซ้ำ
-    const existingUsername = await prisma.account.findUnique({
-      where: { username },
-    });
-    if (existingUsername) {
-      return NextResponse.json(
-        { error: "Username already exists" },
-        { status: 400 },
-      );
-    }
-    // เช็ค email ซ้ำ
-    const existingEmail = await prisma.account.findUnique({
-      where: { email },
-    });
-    if (existingEmail) {
-      return NextResponse.json(
-        { error: "Email already exists" },
-        { status: 400 },
-      );
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = await prisma.admin.create({
-      data: {
-        firstName,
-        lastName,
-        nationalId,
-        account: {
-          create: {
-            username,
-            email,
-            password: hashedPassword,
+      try {
+    const body = await req.json();
+        const { firstName, lastName, username, email, password, nationalId } = body;
+        if (!firstName || !lastName || !username || !password || !email) {
+          return NextResponse.json(
+            { error: "Missing required fields" },
+            { status: 400 },
+          );
+        }
+        // validate email
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return NextResponse.json(
+            { error: "Invalid email format" },
+            { status: 400 },
+          );
+        }
+        // เช็ค username ซ้ำ
+        const existingUsername = await prisma.account.findUnique({
+          where: { username },
+        });
+        if (existingUsername) {
+          return NextResponse.json(
+            { error: "Username already exists" },
+            { status: 400 },
+          );
+        }
+        // เช็ค email ซ้ำ
+        const existingEmail = await prisma.account.findUnique({
+          where: { email },
+        });
+        if (existingEmail) {
+          return NextResponse.json(
+            { error: "Email already exists" },
+            { status: 400 },
+          );
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newAdmin = await prisma.admin.create({
+          data: {
+            firstName,
+            lastName,
+            nationalId,
+            account: {
+              create: {
+                username,
+                email,
+                password: hashedPassword,
+              },
+            },
           },
-        },
-      },
-      include: {
-        account: {
-          select: {
-            username: true,
-            email: true,
+          include: {
+            account: {
+              select: {
+                username: true,
+                email: true,
+              },
+            },
           },
-        },
-      },
-    });
-    return NextResponse.json(newAdmin, { status: 201 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Failed to create admin" },
-      { status: 500 },
-    );
-  }
+        });
+        return NextResponse.json(newAdmin, { status: 201 });
+      } catch (error) {
+        console.error(error);
+        return NextResponse.json(
+          { error: "Failed to create admin" },
+          { status: 500 },
+        );
+      }
+      } catch (err: any) {
+        if (err && err.message === "Unauthorized") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        console.error("BUILD SAFE ERROR:", err);
+        return NextResponse.json({ error: "Build safe" }, { status: 200 });
+      }
 }

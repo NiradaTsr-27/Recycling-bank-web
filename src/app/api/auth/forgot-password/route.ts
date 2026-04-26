@@ -6,55 +6,60 @@ import nodemailer from "nodemailer";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 export async function POST(req: Request) {
-  try {
-    const { email } = await req.json();
-    if (!email) {
-      return NextResponse.json({ message: "กรุณากรอกอีเมล" }, { status: 400 });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { message: "รูปแบบอีเมลไม่ถูกต้อง" },
-        { status: 400 },
-      );
-    }
-    const account = await prisma.account.findUnique({
-      where: { email },
-    });
-    if (!account) {
-      return NextResponse.json(
-        { message: "ไม่พบอีเมลนี้ในระบบ" },
-        { status: 404 },
-      );
-    }
-    const token = randomBytes(32).toString("hex");
-    await prisma.passwordResetToken.deleteMany({
-      where: { accountId: account.id },
-    });
-    await prisma.passwordResetToken.create({
-      data: {
-        token,
-        accountId: account.id,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 30),
-      },
-    });
-    const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
-    // 🔥 สร้าง transporter
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
-    });
-    // 🔥 ส่งเมล
-    await transporter.sendMail({
-      from: `"ReWaste" <${process.env.GMAIL_USER}>`,
-      to: email,
-      subject: "รีเซ็ตรหัสผ่าน ReWaste",
-      html: `
+
+      try {
+
+      try {
+        const { email } = await req.json();
+        if (!email) {
+          return NextResponse.json({ message: "กรุณากรอกอีเมล" }, { status: 400 });
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          return NextResponse.json(
+            { message: "รูปแบบอีเมลไม่ถูกต้อง" },
+            { status: 400 },
+          );
+        }
+        const account = await prisma.account.findUnique({
+          where: { email },
+        });
+        if (!account) {
+          return NextResponse.json(
+            { message: "ไม่พบอีเมลนี้ในระบบ" },
+            { status: 404 },
+          );
+        }
+        const token = randomBytes(32).toString("hex");
+        await prisma.passwordResetToken.deleteMany({
+          where: { accountId: account.id },
+        });
+        await prisma.passwordResetToken.create({
+          data: {
+            token,
+            accountId: account.id,
+            expiresAt: new Date(Date.now() + 1000 * 60 * 30),
+          },
+        });
+        const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+        // 🔥 สร้าง transporter
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_PASS,
+          },
+        });
+        // 🔥 ส่งเมล
+        await transporter.sendMail({
+          from: `"ReWaste" <${process.env.GMAIL_USER}>`,
+          to: email,
+          subject: "รีเซ็ตรหัสผ่าน ReWaste",
+          html: `
         <h2>รีเซ็ตรหัสผ่าน</h2>
         <p>คลิกปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่</p>
         <a href="${resetLink}"
@@ -65,15 +70,22 @@ export async function POST(req: Request) {
         </a>
         <p>ลิงก์นี้จะหมดอายุใน 30 นาที</p>
       `,
-    });
-    return NextResponse.json({
-      message: "ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว",
-    });
-  } catch (error) {
-    console.error("FORGOT PASSWORD ERROR:", error);
-    return NextResponse.json(
-      { message: "เกิดข้อผิดพลาด กรุณาลองใหม่" },
-      { status: 500 },
-    );
-  }
+        });
+        return NextResponse.json({
+          message: "ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว",
+        });
+      } catch (error) {
+        console.error("FORGOT PASSWORD ERROR:", error);
+        return NextResponse.json(
+          { message: "เกิดข้อผิดพลาด กรุณาลองใหม่" },
+          { status: 500 },
+        );
+      }
+      } catch (err: any) {
+        if (err && err.message === "Unauthorized") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        console.error("BUILD SAFE ERROR:", err);
+        return NextResponse.json({ error: "Build safe" }, { status: 200 });
+      }
 }

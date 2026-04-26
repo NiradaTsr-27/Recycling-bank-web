@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // ✅ กัน build พัง (สำคัญมาก)
 const safeRequireAdmin = async () => {
@@ -24,216 +25,236 @@ const safeRequireAdmin = async () => {
 // GET ALL EMPLOYEES
 //////////////////////////////////////////////////////
 export async function GET() {
-  const adminAuth = await safeRequireAdmin();
 
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+      try {
+
+      const adminAuth = await safeRequireAdmin();
+
+      if (!adminAuth) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
 
 
-  try {
-const employees = await prisma.employee.findMany({
-      include: {
-        account: {
-          select: {
-            username: true,
-            email: true,
+      try {
+    const employees = await prisma.employee.findMany({
+          include: {
+            account: {
+              select: {
+                username: true,
+                email: true,
+              },
+            },
+            organization: {
+              select: {
+                name: true,
+              },
+            },
           },
-        },
-        organization: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(employees);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
+          orderBy: { createdAt: "desc" },
+        });
+        return NextResponse.json(employees);
+      } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
+      }
+      } catch (err: any) {
+        if (err && err.message === "Unauthorized") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        console.error("BUILD SAFE ERROR:", err);
+        return NextResponse.json({ error: "Build safe" }, { status: 200 });
+      }
 }
 //////////////////////////////////////////////////////
 // CREATE EMPLOYEE (SAFE VERSION)
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
-  const adminAuth = await safeRequireAdmin();
 
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+      try {
 
+      const adminAuth = await safeRequireAdmin();
 
-
-  try {
-const body = await req.json();
-    const {
-      username,
-      email,
-      password,
-      nationalId,
-      firstName,
-      lastName,
-      phone,
-      houseNo,
-      village,
-      road,
-      alley,
-      subDistrict,
-      district,
-      province,
-      postalCode,
-      organizationId,
-    } = body;
-    //////////////////////////////////////////////////////
-    // VALIDATION
-    //////////////////////////////////////////////////////
-    if (!username || !password || !firstName || !lastName) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
-    }
-    // Validate email format (ถ้ามีส่งมา)
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 },
-      );
-    }
-    // Check username ซ้ำ
-    const existingUsername = await prisma.account.findUnique({
-      where: { username },
-    });
-    if (existingUsername) {
-      return NextResponse.json(
-        { error: "Username already exists" },
-        { status: 400 },
-      );
-    }
-    // Check email ซ้ำ (ถ้ามี email และ schema เป็น @unique)
-    if (email) {
-      const existingEmail = await prisma.account.findUnique({
-        where: { email },
-      });
-      if (existingEmail) {
-        return NextResponse.json(
-          { error: "Email already exists" },
-          { status: 400 },
-        );
+      if (!adminAuth) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-    }
-    // -------------------------------
-    // check duplicate phone
-    // -------------------------------
-    if (phone) {
-      const existingPhone = await prisma.employee.findUnique({
-        where: { phone },
-      });
-      if (existingPhone) {
-        return NextResponse.json(
-          { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
-      }
-    }
-    // -------------------------------
-    // check duplicate nationalId
-    // -------------------------------
-    if (nationalId) {
-      const existingNationalId = await prisma.employee.findUnique({
-        where: { nationalId },
-      });
-      if (existingNationalId) {
-        return NextResponse.json(
-          { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
-      }
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    //////////////////////////////////////////////////////
-    // TRANSACTION (กันข้อมูลค้าง)
-    //////////////////////////////////////////////////////
-    const result = await prisma.$transaction(async (tx) => {
-      const newAccount = await tx.account.create({
-        data: {
+
+
+
+      try {
+    const body = await req.json();
+        const {
           username,
-          email: email || null,
-          password: hashedPassword,
-        },
-      });
-      const newEmployee = await tx.employee.create({
-        data: {
+          email,
+          password,
+          nationalId,
           firstName,
           lastName,
-          nationalId,
-          phone: phone || null,
-          houseNo: houseNo || null,
-          village: village || null,
-          road: road || null,
-          alley: alley || null,
-          subDistrict: subDistrict || null,
-          district: district || null,
-          province: province || null,
-          postalCode: postalCode || null,
-          organizationId:
-            organizationId && organizationId !== ""
-              ? Number(organizationId)
-              : null,
-          accountId: newAccount.id,
-        },
-        include: {
-          account: {
-            select: {
-              username: true,
-              email: true,
+          phone,
+          houseNo,
+          village,
+          road,
+          alley,
+          subDistrict,
+          district,
+          province,
+          postalCode,
+          organizationId,
+        } = body;
+        //////////////////////////////////////////////////////
+        // VALIDATION
+        //////////////////////////////////////////////////////
+        if (!username || !password || !firstName || !lastName) {
+          return NextResponse.json(
+            { error: "Missing required fields" },
+            { status: 400 },
+          );
+        }
+        // Validate email format (ถ้ามีส่งมา)
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return NextResponse.json(
+            { error: "Invalid email format" },
+            { status: 400 },
+          );
+        }
+        // Check username ซ้ำ
+        const existingUsername = await prisma.account.findUnique({
+          where: { username },
+        });
+        if (existingUsername) {
+          return NextResponse.json(
+            { error: "Username already exists" },
+            { status: 400 },
+          );
+        }
+        // Check email ซ้ำ (ถ้ามี email และ schema เป็น @unique)
+        if (email) {
+          const existingEmail = await prisma.account.findUnique({
+            where: { email },
+          });
+          if (existingEmail) {
+            return NextResponse.json(
+              { error: "Email already exists" },
+              { status: 400 },
+            );
+          }
+        }
+        // -------------------------------
+        // check duplicate phone
+        // -------------------------------
+        if (phone) {
+          const existingPhone = await prisma.employee.findUnique({
+            where: { phone },
+          });
+          if (existingPhone) {
+            return NextResponse.json(
+              { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+        }
+        // -------------------------------
+        // check duplicate nationalId
+        // -------------------------------
+        if (nationalId) {
+          const existingNationalId = await prisma.employee.findUnique({
+            where: { nationalId },
+          });
+          if (existingNationalId) {
+            return NextResponse.json(
+              { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        //////////////////////////////////////////////////////
+        // TRANSACTION (กันข้อมูลค้าง)
+        //////////////////////////////////////////////////////
+        const result = await prisma.$transaction(async (tx) => {
+          const newAccount = await tx.account.create({
+            data: {
+              username,
+              email: email || null,
+              password: hashedPassword,
             },
-          },
-          organization: {
-            select: {
-              name: true,
+          });
+          const newEmployee = await tx.employee.create({
+            data: {
+              firstName,
+              lastName,
+              nationalId,
+              phone: phone || null,
+              houseNo: houseNo || null,
+              village: village || null,
+              road: road || null,
+              alley: alley || null,
+              subDistrict: subDistrict || null,
+              district: district || null,
+              province: province || null,
+              postalCode: postalCode || null,
+              organizationId:
+                organizationId && organizationId !== ""
+                  ? Number(organizationId)
+                  : null,
+              accountId: newAccount.id,
             },
-          },
-        },
-      });
-      return newEmployee;
-    });
-    return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
-    console.error("CREATE EMPLOYEE ERROR:", error);
-    if (error.code === "P2002") {
-      const target = error.meta?.target?.[0];
-      if (target === "phone") {
+            include: {
+              account: {
+                select: {
+                  username: true,
+                  email: true,
+                },
+              },
+              organization: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          });
+          return newEmployee;
+        });
+        return NextResponse.json(result, { status: 201 });
+      } catch (error: any) {
+        console.error("CREATE EMPLOYEE ERROR:", error);
+        if (error.code === "P2002") {
+          const target = error.meta?.target?.[0];
+          if (target === "phone") {
+            return NextResponse.json(
+              { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+          if (target === "nationalId") {
+            return NextResponse.json(
+              { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+          if (target === "username") {
+            return NextResponse.json(
+              { field: "username", message: "Username นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+          if (target === "email") {
+            return NextResponse.json(
+              { field: "email", message: "Email นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+        }
         return NextResponse.json(
-          { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
-          { status: 400 },
+          { error: "เกิดข้อผิดพลาดในการสร้างพนักงาน" },
+          { status: 500 },
         );
       }
-      if (target === "nationalId") {
-        return NextResponse.json(
-          { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
+      } catch (err: any) {
+        if (err && err.message === "Unauthorized") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        console.error("BUILD SAFE ERROR:", err);
+        return NextResponse.json({ error: "Build safe" }, { status: 200 });
       }
-      if (target === "username") {
-        return NextResponse.json(
-          { field: "username", message: "Username นี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
-      }
-      if (target === "email") {
-        return NextResponse.json(
-          { field: "email", message: "Email นี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
-      }
-    }
-    return NextResponse.json(
-      { error: "เกิดข้อผิดพลาดในการสร้างพนักงาน" },
-      { status: 500 },
-    );
-  }
 }

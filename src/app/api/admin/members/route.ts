@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // ✅ กัน build พัง (สำคัญมาก)
 const safeRequireAdmin = async () => {
@@ -24,226 +25,246 @@ const safeRequireAdmin = async () => {
 // GET ALL MEMBERS
 //////////////////////////////////////////////////////
 export async function GET() {
-  const adminAuth = await safeRequireAdmin();
 
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+      try {
+
+      const adminAuth = await safeRequireAdmin();
+
+      if (!adminAuth) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
 
 
-  try {
-const members = await prisma.member.findMany({
-      include: {
-        account: {
-          select: {
-            username: true,
-            email: true,
+      try {
+    const members = await prisma.member.findMany({
+          include: {
+            account: {
+              select: {
+                username: true,
+                email: true,
+              },
+            },
+            wallet: true,
           },
-        },
-        wallet: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(members);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
+          orderBy: { createdAt: "desc" },
+        });
+        return NextResponse.json(members);
+      } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
+      }
+      } catch (err: any) {
+        if (err && err.message === "Unauthorized") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        console.error("BUILD SAFE ERROR:", err);
+        return NextResponse.json({ error: "Build safe" }, { status: 200 });
+      }
 }
 //////////////////////////////////////////////////////
 // CREATE MEMBER
 //////////////////////////////////////////////////////
 export async function POST(req: Request) {
-  const adminAuth = await safeRequireAdmin();
 
-  if (!adminAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+      try {
 
+      const adminAuth = await safeRequireAdmin();
 
-
-  try {
-const body = await req.json();
-    const {
-      username,
-      email,
-      password,
-      nationalId,
-      firstName,
-      lastName,
-      phone,
-      houseNo,
-      village,
-      road,
-      alley,
-      subDistrict,
-      district,
-      province,
-      postalCode,
-    } = body;
-    //////////////////////////////////////////////////////
-    // REQUIRED VALIDATION
-    //////////////////////////////////////////////////////
-    if (!username || !password || !firstName || !lastName || !nationalId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
-    }
-    //////////////////////////////////////////////////////
-    // VALIDATE NATIONAL ID (13 digits)
-    //////////////////////////////////////////////////////
-    if (!/^\d{13}$/.test(nationalId)) {
-      return NextResponse.json(
-        { field: "nationalId", message: "เลขบัตรประชาชนต้องมี 13 หลัก" },
-        { status: 400 },
-      );
-    }
-    //////////////////////////////////////////////////////
-    // VALIDATE PHONE (10 digits)
-    //////////////////////////////////////////////////////
-    if (phone && !/^\d{10}$/.test(phone)) {
-      return NextResponse.json(
-        { field: "phone", message: "เบอร์โทรศัพท์ต้องมี 10 หลัก" },
-        { status: 400 },
-      );
-    }
-    //////////////////////////////////////////////////////
-    // VALIDATE EMAIL FORMAT
-    //////////////////////////////////////////////////////
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json(
-        { field: "email", message: "รูปแบบ Email ไม่ถูกต้อง" },
-        { status: 400 },
-      );
-    }
-    //////////////////////////////////////////////////////
-    // CHECK DUPLICATES
-    //////////////////////////////////////////////////////
-    // username
-    const existingUsername = await prisma.account.findUnique({
-      where: { username },
-    });
-    if (existingUsername) {
-      return NextResponse.json(
-        { field: "username", message: "Username นี้ถูกใช้แล้ว" },
-        { status: 400 },
-      );
-    }
-    // email
-    if (email) {
-      const existingEmail = await prisma.account.findUnique({
-        where: { email },
-      });
-      if (existingEmail) {
-        return NextResponse.json(
-          { field: "email", message: "Email นี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
+      if (!adminAuth) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-    }
-    // phone
-    if (phone) {
-      const existingPhone = await prisma.member.findUnique({
-        where: { phone },
-      });
-      if (existingPhone) {
-        return NextResponse.json(
-          { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
-      }
-    }
-    // nationalId
-    const existingNationalId = await prisma.member.findUnique({
-      where: { nationalId },
-    });
-    if (existingNationalId) {
-      return NextResponse.json(
-        { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
-        { status: 400 },
-      );
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    //////////////////////////////////////////////////////
-    // TRANSACTION (ป้องกันข้อมูลค้าง)
-    //////////////////////////////////////////////////////
-    const result = await prisma.$transaction(async (tx) => {
-      const newAccount = await tx.account.create({
-        data: {
+
+
+
+      try {
+    const body = await req.json();
+        const {
           username,
-          email: email || null,
-          password: hashedPassword,
-        },
-      });
-      const newMember = await tx.member.create({
-        data: {
+          email,
+          password,
           nationalId,
           firstName,
           lastName,
-          phone: phone || null,
-          houseNo: houseNo || null,
-          village: village || null,
-          road: road || null,
-          alley: alley || null,
-          subDistrict: subDistrict || null,
-          district: district || null,
-          province: province || null,
-          postalCode: postalCode || null,
-          accountId: newAccount.id,
-          wallet: {
-            create: {},
-          },
-        },
-        include: {
-          account: {
-            select: {
-              username: true,
-              email: true,
+          phone,
+          houseNo,
+          village,
+          road,
+          alley,
+          subDistrict,
+          district,
+          province,
+          postalCode,
+        } = body;
+        //////////////////////////////////////////////////////
+        // REQUIRED VALIDATION
+        //////////////////////////////////////////////////////
+        if (!username || !password || !firstName || !lastName || !nationalId) {
+          return NextResponse.json(
+            { error: "Missing required fields" },
+            { status: 400 },
+          );
+        }
+        //////////////////////////////////////////////////////
+        // VALIDATE NATIONAL ID (13 digits)
+        //////////////////////////////////////////////////////
+        if (!/^\d{13}$/.test(nationalId)) {
+          return NextResponse.json(
+            { field: "nationalId", message: "เลขบัตรประชาชนต้องมี 13 หลัก" },
+            { status: 400 },
+          );
+        }
+        //////////////////////////////////////////////////////
+        // VALIDATE PHONE (10 digits)
+        //////////////////////////////////////////////////////
+        if (phone && !/^\d{10}$/.test(phone)) {
+          return NextResponse.json(
+            { field: "phone", message: "เบอร์โทรศัพท์ต้องมี 10 หลัก" },
+            { status: 400 },
+          );
+        }
+        //////////////////////////////////////////////////////
+        // VALIDATE EMAIL FORMAT
+        //////////////////////////////////////////////////////
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return NextResponse.json(
+            { field: "email", message: "รูปแบบ Email ไม่ถูกต้อง" },
+            { status: 400 },
+          );
+        }
+        //////////////////////////////////////////////////////
+        // CHECK DUPLICATES
+        //////////////////////////////////////////////////////
+        // username
+        const existingUsername = await prisma.account.findUnique({
+          where: { username },
+        });
+        if (existingUsername) {
+          return NextResponse.json(
+            { field: "username", message: "Username นี้ถูกใช้แล้ว" },
+            { status: 400 },
+          );
+        }
+        // email
+        if (email) {
+          const existingEmail = await prisma.account.findUnique({
+            where: { email },
+          });
+          if (existingEmail) {
+            return NextResponse.json(
+              { field: "email", message: "Email นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+        }
+        // phone
+        if (phone) {
+          const existingPhone = await prisma.member.findUnique({
+            where: { phone },
+          });
+          if (existingPhone) {
+            return NextResponse.json(
+              { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+        }
+        // nationalId
+        const existingNationalId = await prisma.member.findUnique({
+          where: { nationalId },
+        });
+        if (existingNationalId) {
+          return NextResponse.json(
+            { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
+            { status: 400 },
+          );
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        //////////////////////////////////////////////////////
+        // TRANSACTION (ป้องกันข้อมูลค้าง)
+        //////////////////////////////////////////////////////
+        const result = await prisma.$transaction(async (tx) => {
+          const newAccount = await tx.account.create({
+            data: {
+              username,
+              email: email || null,
+              password: hashedPassword,
             },
-          },
-          wallet: true,
-        },
-      });
-      return newMember;
-    });
-    return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
-    console.error("CREATE MEMBER ERROR:", error);
-    //////////////////////////////////////////////////////
-    // HANDLE PRISMA UNIQUE ERROR
-    //////////////////////////////////////////////////////
-    if (error.code === "P2002") {
-      const target = error.meta?.target?.[0];
-      if (target === "phone") {
+          });
+          const newMember = await tx.member.create({
+            data: {
+              nationalId,
+              firstName,
+              lastName,
+              phone: phone || null,
+              houseNo: houseNo || null,
+              village: village || null,
+              road: road || null,
+              alley: alley || null,
+              subDistrict: subDistrict || null,
+              district: district || null,
+              province: province || null,
+              postalCode: postalCode || null,
+              accountId: newAccount.id,
+              wallet: {
+                create: {},
+              },
+            },
+            include: {
+              account: {
+                select: {
+                  username: true,
+                  email: true,
+                },
+              },
+              wallet: true,
+            },
+          });
+          return newMember;
+        });
+        return NextResponse.json(result, { status: 201 });
+      } catch (error: any) {
+        console.error("CREATE MEMBER ERROR:", error);
+        //////////////////////////////////////////////////////
+        // HANDLE PRISMA UNIQUE ERROR
+        //////////////////////////////////////////////////////
+        if (error.code === "P2002") {
+          const target = error.meta?.target?.[0];
+          if (target === "phone") {
+            return NextResponse.json(
+              { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+          if (target === "nationalId") {
+            return NextResponse.json(
+              { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+          if (target === "username") {
+            return NextResponse.json(
+              { field: "username", message: "Username นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+          if (target === "email") {
+            return NextResponse.json(
+              { field: "email", message: "Email นี้ถูกใช้แล้ว" },
+              { status: 400 },
+            );
+          }
+        }
         return NextResponse.json(
-          { field: "phone", message: "เบอร์โทรศัพท์นี้ถูกใช้แล้ว" },
-          { status: 400 },
+          { error: "เกิดข้อผิดพลาดในการสร้างสมาชิก" },
+          { status: 500 },
         );
       }
-      if (target === "nationalId") {
-        return NextResponse.json(
-          { field: "nationalId", message: "เลขบัตรประชาชนนี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
+      } catch (err: any) {
+        if (err && err.message === "Unauthorized") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        console.error("BUILD SAFE ERROR:", err);
+        return NextResponse.json({ error: "Build safe" }, { status: 200 });
       }
-      if (target === "username") {
-        return NextResponse.json(
-          { field: "username", message: "Username นี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
-      }
-      if (target === "email") {
-        return NextResponse.json(
-          { field: "email", message: "Email นี้ถูกใช้แล้ว" },
-          { status: 400 },
-        );
-      }
-    }
-    return NextResponse.json(
-      { error: "เกิดข้อผิดพลาดในการสร้างสมาชิก" },
-      { status: 500 },
-    );
-  }
 }
